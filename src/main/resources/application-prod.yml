@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${HOST}:${PORT}/${NAME}
+    driver-class-name: org.postgresql.Driver
+    username: ${USERNAME}
+    password: ${PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+  h2:
+    console:
+      enabled: false
+
+springdoc:
+  swagger-ui:
+    enabled: false

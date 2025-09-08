@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    active: dev
+
+server:
+  shutdown: graceful
+  compression:
+    enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /api-docs
+
+findex:
+  openapi:
+    base-url: https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService
+    service-key: ${OPENAPI_SERVICE_KEY:}

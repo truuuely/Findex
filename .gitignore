@@ -268,3 +268,9 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,intellij+all,gradle,java,eclipse
+
+# secret key info
+.env
+
+# sdkman
+.sdkmanrc
