@@ -22,6 +22,6 @@ public class IndexInfoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public IndexInfoDto create(@RequestBody @Valid IndexInfoCreateRequest req) {
-        return null;
+        return indexInfoService.create(req);
     }
 }
