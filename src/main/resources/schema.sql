@@ -1,0 +1,56 @@
+DROP TABLE IF EXISTS index_info CASCADE;
+DROP TABLE IF EXISTS index_data CASCADE;
+DROP TABLE IF EXISTS sync_job CASCADE;
+DROP TABLE IF EXISTS auto_sync_config CASCADE;
+
+CREATE TABLE IF NOT EXISTS index_info
+(
+    id                   BIGINT PRIMARY KEY,
+    index_classification VARCHAR(255) NOT NULL,
+    index_name           VARCHAR(100) NOT NULL,
+    employed_items_count INTEGER,
+    base_point_in_time   DATE,
+    base_index           INTEGER,
+    source_type          VARCHAR(10)  NOT NULL CHECK (source_type IN ('USER', 'OPEN_API')),
+    favorite             BOOLEAN DEFAULT FALSE,
+    CONSTRAINT uk_index UNIQUE (index_classification, index_name)
+);
+
+CREATE TABLE IF NOT EXISTS index_data
+(
+    id                  BIGINT PRIMARY KEY,
+    index_info_id       BIGINT      NOT NULL,
+    base_date           DATE        NOT NULL,
+    source_type         VARCHAR(10) NOT NULL CHECK (source_type IN ('USER', 'OPEN_API')),
+    market_price        NUMERIC(20, 2),
+    closing_price       NUMERIC(20, 2),
+    high_price          NUMERIC(20, 1),
+    low_price           NUMERIC(20, 1),
+    versus              NUMERIC(20, 1),
+    fluctuation_rate    NUMERIC(20, 1),
+    trading_quantity    BIGINT,
+    trading_price       BIGINT,
+    market_total_amount BIGINT,
+    CONSTRAINT uk_index_date UNIQUE (index_info_id, base_date),
+    CONSTRAINT fk_index_data_info FOREIGN KEY (index_info_id) REFERENCES index_info (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS sync_job
+(
+    id            BIGINT PRIMARY KEY,
+    index_info_id BIGINT       NOT NULL,
+    job_type      VARCHAR(10)  NOT NULL CHECK (job_type IN ('INDEX_INFO', 'INDEX_DATA')),
+    target_date   DATE         NOT NULL,
+    worker        VARCHAR(100) NOT NULL,
+    job_time      TIMESTAMP    NOT NULL,
+    result        VARCHAR(10)  NOT NULL CHECK (result IN ('SUCCESS', 'FAILED')),
+    CONSTRAINT fk_sync_job_info FOREIGN KEY (index_info_id) REFERENCES index_info (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS auto_sync_config
+(
+    id            BIGINT PRIMARY KEY,
+    index_info_id BIGINT UNIQUE NOT NULL,
+    enabled       BOOLEAN       NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_auto_sync_info FOREIGN KEY (index_info_id) REFERENCES index_info (id) ON DELETE CASCADE
+)
