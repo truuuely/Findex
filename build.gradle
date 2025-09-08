@@ -35,9 +35,8 @@ dependencies {
     // 유틸
     implementation 'org.apache.commons:commons-lang3:3.18.0'
 
-    // Postgresql, H2 드라이버
+    // Postgresql 드라이버
     runtimeOnly 'org.postgresql:postgresql'
-    runtimeOnly 'com.h2database:h2'
 
     // MapStruct
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
