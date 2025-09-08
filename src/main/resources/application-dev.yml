@@ -5,8 +5,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/findex
-    username: findex_user
-    password: findex1234
+    username: ${POSTGRESQL_USERNAME:}
+    password: ${POSTGRESQL_PASSWORD:}
 
   jpa:
     open-in-view: false
