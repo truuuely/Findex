@@ -64,4 +64,9 @@ public class IndexInfoService {
 
         return indexInfoMapper.toDto(indexInfo);
     }
+
+    @Transactional
+    public void delete(Long id) {
+        indexInfoRepository.delete(indexInfoRepository.getOrThrow(id));
+    }
 }
