@@ -9,7 +9,7 @@ import com.findex.dto.response.CursorPageResponse;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
 import com.findex.mapper.IndexInfoMapper;
-import com.findex.repository.IndexInfoRepository;
+import com.findex.repository.indexinfo.IndexInfoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +27,7 @@ public class IndexInfoService {
     private final IndexInfoMapper indexInfoMapper;
 
     public CursorPageResponse findAll(IndexInfoQuery query) {
-        log.info("Query: {}", query);
-        return null;
+        return indexInfoRepository.findAll(query);
     }
 
     @Transactional
