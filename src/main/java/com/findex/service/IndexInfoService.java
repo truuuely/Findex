@@ -35,4 +35,8 @@ public class IndexInfoService {
 
         return indexInfoMapper.toDto(indexInfo);
     }
+
+    public IndexInfoDto findById(Long id) {
+        return indexInfoMapper.toDto(indexInfoRepository.getOrThrow(id));
+    }
 }
