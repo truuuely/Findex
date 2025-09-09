@@ -50,4 +50,39 @@ public class IndexData extends BaseEntity {
     private Long tradingPrice;
     private Long marketTotalAmount;
 
+    public void updatePrices(BigDecimal marketPrice, BigDecimal closingPrice, BigDecimal highPrice, BigDecimal lowPrice) {
+        if (marketPrice != null) {
+            this.marketPrice = marketPrice;
+        }
+        if (closingPrice != null) {
+            this.closingPrice = closingPrice;
+        }
+        if (highPrice != null) {
+            this.highPrice = highPrice;
+        }
+        if (lowPrice != null) {
+            this.lowPrice = lowPrice;
+        }
+    }
+
+    public void updateFluctuation(BigDecimal versus, BigDecimal fluctuationRate) {
+        if (versus != null) {
+            this.versus = versus;
+        }
+        if (fluctuationRate != null) {
+            this.fluctuationRate = fluctuationRate;
+        }
+    }
+
+    public void updateTrading(Long tradingQuantity, Long tradingPrice, Long marketTotalAmount) {
+        if (tradingQuantity != null) {
+            this.tradingQuantity = tradingQuantity;
+        }
+        if (tradingPrice != null) {
+            this.tradingPrice = tradingPrice;
+        }
+        if (marketTotalAmount != null) {
+            this.marketTotalAmount = marketTotalAmount;
+        }
+    }
 }
