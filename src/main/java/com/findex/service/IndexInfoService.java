@@ -2,6 +2,7 @@ package com.findex.service;
 
 import com.findex.dto.indexinfo.IndexInfoCreateRequest;
 import com.findex.dto.indexinfo.IndexInfoDto;
+import com.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
 import com.findex.mapper.IndexInfoMapper;
@@ -38,5 +39,29 @@ public class IndexInfoService {
 
     public IndexInfoDto findById(Long id) {
         return indexInfoMapper.toDto(indexInfoRepository.getOrThrow(id));
+    }
+
+    @Transactional
+    public IndexInfoDto update(Long id, IndexInfoUpdateRequest req) {
+
+        IndexInfo indexInfo = indexInfoRepository.getOrThrow(id);
+
+        if (req.employedItemsCount() != null) {
+            indexInfo.setEmployedItemsCount(req.employedItemsCount());
+        }
+
+        if (req.basePointInTime() != null) {
+            indexInfo.setBasePointInTime(req.basePointInTime());
+        }
+
+        if (req.baseIndex() != null) {
+            indexInfo.setBaseIndex(req.baseIndex());
+        }
+
+        if (req.favorite() != null) {
+            indexInfo.setFavorite(req.favorite());
+        }
+
+        return indexInfoMapper.toDto(indexInfo);
     }
 }
