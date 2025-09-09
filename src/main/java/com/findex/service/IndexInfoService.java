@@ -2,11 +2,13 @@ package com.findex.service;
 
 import com.findex.dto.indexinfo.IndexInfoCreateRequest;
 import com.findex.dto.indexinfo.IndexInfoDto;
+import com.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
 import com.findex.mapper.IndexInfoMapper;
 import com.findex.repository.IndexInfoRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,5 +70,9 @@ public class IndexInfoService {
     @Transactional
     public void delete(Long id) {
         indexInfoRepository.delete(indexInfoRepository.getOrThrow(id));
+    }
+
+    public List<IndexInfoSummaryDto> findAllSummaries() {
+        return indexInfoRepository.findAllSummaries();
     }
 }

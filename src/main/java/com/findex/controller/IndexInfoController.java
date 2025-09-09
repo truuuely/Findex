@@ -2,9 +2,11 @@ package com.findex.controller;
 
 import com.findex.dto.indexinfo.IndexInfoCreateRequest;
 import com.findex.dto.indexinfo.IndexInfoDto;
+import com.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.findex.service.IndexInfoService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,9 +44,15 @@ public class IndexInfoController {
         return indexInfoService.update(id, req);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         indexInfoService.delete(id);
+    }
+
+    @GetMapping("/summaries")
+    @ResponseStatus(HttpStatus.OK)
+    public List<IndexInfoSummaryDto> findAllSummaries() {
+        return indexInfoService.findAllSummaries();
     }
 }
