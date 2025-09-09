@@ -2,11 +2,13 @@ package com.findex.controller;
 
 import com.findex.dto.indexinfo.IndexInfoCreateRequest;
 import com.findex.dto.indexinfo.IndexInfoDto;
+import com.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.findex.service.IndexInfoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,5 +33,11 @@ public class IndexInfoController {
     @ResponseStatus(HttpStatus.OK)
     public IndexInfoDto findById(@PathVariable Long id) {
         return indexInfoService.findById(id);
+    }
+
+    @PatchMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public IndexInfoDto update(@PathVariable Long id, @RequestBody @Valid IndexInfoUpdateRequest req) {
+        return indexInfoService.update(id, req);
     }
 }
