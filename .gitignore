@@ -274,3 +274,6 @@ gradle-app.setting
 
 # sdkman
 .sdkmanrc
+
+# intellij
+.idea
