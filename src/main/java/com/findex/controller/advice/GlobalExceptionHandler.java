@@ -25,6 +25,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
@@ -36,6 +37,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInvalidJson(
         HttpMessageNotReadableException e,
         HttpServletRequest req
@@ -59,6 +61,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintViolation(
         ConstraintViolationException e,
         HttpServletRequest req
@@ -79,6 +82,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(
         MethodArgumentNotValidException e,
         HttpServletRequest req
@@ -94,6 +98,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleParameterTypeValidation(
         MethodArgumentTypeMismatchException e,
         HttpServletRequest req
@@ -116,6 +121,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMissingParameter(
         MissingServletRequestParameterException e,
         HttpServletRequest req
@@ -137,6 +143,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMissingPart(
         MissingServletRequestPartException e,
         HttpServletRequest req
@@ -155,6 +162,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({ NoHandlerFoundException.class, NoResourceFoundException.class })
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNoHandler(
         Exception e,
         HttpServletRequest req
@@ -168,6 +176,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(
         NotFoundException e,
         HttpServletRequest req
@@ -181,6 +190,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ErrorResponse handleMethodNotAllowed(
         HttpRequestMethodNotSupportedException e,
         HttpServletRequest req
@@ -205,6 +215,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleDataIntegrity(
         DataIntegrityViolationException e,
         HttpServletRequest req
@@ -220,6 +231,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
     public ErrorResponse handleMediaTypeNotSupported(
         HttpMediaTypeNotSupportedException e,
         HttpServletRequest req
@@ -238,6 +250,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleAny(
         Exception e,
         HttpServletRequest req
