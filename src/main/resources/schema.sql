@@ -54,3 +54,6 @@ CREATE TABLE IF NOT EXISTS auto_sync_config
     enabled       BOOLEAN       NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_auto_sync_info FOREIGN KEY (index_info_id) REFERENCES index_info (id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_index_info_index_classification ON index_info (index_classification);
+CREATE INDEX idx_index_info_index_name ON index_info (index_name);
