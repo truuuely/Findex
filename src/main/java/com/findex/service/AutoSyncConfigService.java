@@ -3,7 +3,6 @@ package com.findex.service;
 import com.findex.dto.autoSyncConfig.AutoSyncConfigDto;
 import com.findex.dto.autoSyncConfig.AutoSyncConfigUpdateRequest;
 import com.findex.entity.AutoSyncConfig;
-import com.findex.entity.IndexInfo;
 import com.findex.exception.NotFoundException;
 import com.findex.mapper.AutoSyncConfigMapper;
 import com.findex.repository.AutoSyncConfigRepository;
@@ -16,16 +15,6 @@ import org.springframework.stereotype.Service;
 public class AutoSyncConfigService {
     private final AutoSyncConfigRepository autoSyncConfigRepository;
     private final AutoSyncConfigMapper autoSyncConfigMapper;
-
-    public AutoSyncConfigDto create(IndexInfo indexInfo) {
-        if (autoSyncConfigRepository.existsByIndexInfoId(indexInfo.getId())) {
-            throw new IllegalStateException("already exists indexInfo in AutoSyncConfig");
-        }
-
-        AutoSyncConfig autoSyncConfig = new AutoSyncConfig(false, indexInfo);
-
-        return autoSyncConfigMapper.toDto(autoSyncConfigRepository.saveAndFlush(autoSyncConfig));
-    }
 
     @Transactional
     public AutoSyncConfigDto update(Long id, AutoSyncConfigUpdateRequest request) {

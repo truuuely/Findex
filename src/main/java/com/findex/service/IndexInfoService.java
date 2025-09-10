@@ -12,18 +12,15 @@ import com.findex.mapper.IndexInfoMapper;
 import com.findex.repository.indexinfo.IndexInfoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class IndexInfoService {
 
     private final IndexInfoRepository indexInfoRepository;
-    private final AutoSyncConfigService autoSyncConfigService;
     private final IndexInfoMapper indexInfoMapper;
 
     public CursorPageResponse findAll(IndexInfoQuery query) {
@@ -43,7 +40,6 @@ public class IndexInfoService {
                         req.favorite() != null && req.favorite()
                 )
         );
-        autoSyncConfigService.create(indexInfo);
         return indexInfoMapper.toDto(indexInfo);
     }
 
