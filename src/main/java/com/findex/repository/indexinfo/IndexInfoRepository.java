@@ -1,4 +1,4 @@
-package com.findex.repository;
+package com.findex.repository.indexinfo;
 
 import com.findex.dto.dashboard.IndexPerformanceRawDto;
 import com.findex.dto.indexinfo.IndexInfoSummaryDto;
@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
+public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>, IndexInfoQueryRepository {
 
   List<IndexInfo> findAllByFavorite(boolean favorite);
 
