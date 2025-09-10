@@ -1,13 +1,20 @@
 package com.findex.controller;
 
+import com.findex.dto.autoSyncConfig.AutoSyncConfigDto;
+import com.findex.dto.autoSyncConfig.AutoSyncConfigUpdateRequest;
 import com.findex.service.AutoSyncConfigService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
-@Controller(value = "api/auto-sync-configs")
+@RestController
+@RequestMapping("api/auto-sync-configs")
 @RequiredArgsConstructor
 public class AutoSyncConfigController {
-    private AutoSyncConfigService autoSyncConfigService;
+    private final AutoSyncConfigService autoSyncConfigService;
 
-
+    @PatchMapping("/{id}")
+    public AutoSyncConfigDto update(@PathVariable Long id, @RequestBody @Valid AutoSyncConfigUpdateRequest request) {
+        return autoSyncConfigService.update(id, request);
+    }
 }
