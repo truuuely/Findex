@@ -19,23 +19,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class IndexInfoService {
 
     private final IndexInfoRepository indexInfoRepository;
-
+    private final AutoSyncConfigService autoSyncConfigService;
     private final IndexInfoMapper indexInfoMapper;
 
     @Transactional
     public IndexInfoDto create(IndexInfoCreateRequest req) {
         IndexInfo indexInfo = indexInfoRepository.save(
                 new IndexInfo(
-                    req.indexClassification(),
-                    req.indexName(),
-                    req.employedItemsCount(),
-                    req.basePointInTime(),
-                    req.baseIndex(),
-                    IndexSourceType.USER,
-                    req.favorite() != null && req.favorite()
+                        req.indexClassification(),
+                        req.indexName(),
+                        req.employedItemsCount(),
+                        req.basePointInTime(),
+                        req.baseIndex(),
+                        IndexSourceType.USER,
+                        req.favorite() != null && req.favorite()
                 )
         );
-
+        autoSyncConfigService.create(indexInfo);
         return indexInfoMapper.toDto(indexInfo);
     }
 
