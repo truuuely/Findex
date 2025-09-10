@@ -20,7 +20,7 @@ public class AutoSyncConfigService {
     public AutoSyncConfigDto update(Long id, AutoSyncConfigUpdateRequest request) {
         AutoSyncConfig autoSyncConfig = autoSyncConfigRepository.findById(id).orElseThrow(
                 () -> new NotFoundException("AutoSyncConfig with id %s not found".formatted(id)));
-        autoSyncConfig.setEnabled(request.enabled());
+        autoSyncConfig.updateEnabled(request.enabled());
 
         return autoSyncConfigMapper.toDto(autoSyncConfig);
     }
