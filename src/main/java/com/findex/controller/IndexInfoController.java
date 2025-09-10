@@ -2,8 +2,10 @@ package com.findex.controller;
 
 import com.findex.dto.indexinfo.IndexInfoCreateRequest;
 import com.findex.dto.indexinfo.IndexInfoDto;
+import com.findex.dto.indexinfo.IndexInfoQuery;
 import com.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.findex.dto.indexinfo.IndexInfoUpdateRequest;
+import com.findex.dto.response.CursorPageResponse;
 import com.findex.service.IndexInfoService;
 import com.findex.service.IndexInfoSyncService;
 import jakarta.validation.Valid;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +30,12 @@ public class IndexInfoController {
 
     private final IndexInfoService indexInfoService;
     private final IndexInfoSyncService syncService;
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public CursorPageResponse findAll(@ModelAttribute IndexInfoQuery query) {
+        return indexInfoService.findAll(query);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
