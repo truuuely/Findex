@@ -1,6 +1,5 @@
 package com.findex.dto.indexinfo;
 
-import java.util.Locale;
 
 public record IndexInfoQuery(
     String indexClassification,
@@ -20,7 +19,5 @@ public record IndexInfoQuery(
         if (sortField == null) sortField = DEFAULT_SORT_FIELD;
         if (sortDirection == null) sortDirection = DEFAULT_SORT_DIRECTION;
         if (size == null) size = DEFAULT_SIZE;
-        indexClassification = indexClassification != null ? indexClassification.strip().toLowerCase(Locale.ROOT) : null;
-        indexName = indexName != null ? indexName.strip().toLowerCase(Locale.ROOT) : null;
     }
 }
