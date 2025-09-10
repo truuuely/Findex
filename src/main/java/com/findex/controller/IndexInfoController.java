@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class IndexInfoController {
 
     private final IndexInfoService indexInfoService;
-    private final IndexInfoSyncService syncService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -66,18 +65,4 @@ public class IndexInfoController {
     public List<IndexInfoSummaryDto> findAllSummaries() {
         return indexInfoService.findAllSummaries();
     }
-
-    //지수정보 가져올 수 있는 엔드포인트
-    @PostMapping("/openapi/sync")
-    @ResponseStatus(HttpStatus.OK)
-    public SyncResponse syncAll() {
-        var r = syncService.syncAll();
-        return new SyncResponse(r.fetched(), r.inserted(), r.updated());
-    }
-
-    public record SyncResponse(
-        int fetched,              // Open API에서 받아온 총 개수
-        int inserted,    // 삽입 또는 OPEN_API행 갱신 개수
-        int updated      // 원래 데이터가 존재해 덮어씌운 개수
-    ) {}
 }

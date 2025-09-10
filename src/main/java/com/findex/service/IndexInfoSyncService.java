@@ -1,13 +1,16 @@
 package com.findex.service;
 
 
+import com.findex.dto.indexinfo.IndexInfoDto;
 import com.findex.dto.syncjob.MarketIndexRoot;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
 import com.findex.enums.SourceType;
 import com.findex.openapi.MarketIndexClient;
-import com.findex.repository.IndexInfoRepository;
+import com.findex.repository.indexinfo.IndexInfoRepository;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,82 +25,50 @@ public class IndexInfoSyncService {
   private final MarketIndexClient client;         // 실제 OpenAPI 호출
   private final IndexInfoRepository repo;
 
-  public record SyncResult(int fetched, int inserted, int updated) {}
-
   @Transactional
-  public SyncResult syncAll() {
-    final int pageSize = 100;
-    int page = 1;
-    int fetched = 0, inserted = 0, updated = 0;
-
+  public List<IndexInfoDto> SyncResponse() {
+    final int limit = 300;  // ← 200개만 연동
     DateTimeFormatter ymd = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-    // 페이지 고착(같은 페이지 반복) 방지용
-    String lastFirstKey = null;
-    final int HARD_PAGE_LIMIT = 200;
+    MarketIndexClient.PageResult pr = client.callGetStockMarketIndex(1, limit);
+    var items = (pr != null) ? pr.items() : null;
 
-    while (true) {
-      // OpenAPI 호출
-      MarketIndexClient.PageResult pr = client.callGetStockMarketIndex(page, pageSize);
-      var items = pr.items();
-      if (items == null || items.isEmpty()) break;
+    List<IndexInfoDto> result = new ArrayList<>();
+    if (items == null || items.isEmpty()) return result;
 
-      // 같은 페이지가 반복되는지..
-      String firstKey = null;
-      var first = items.get(0);
-      if (first != null) firstKey = norm(first.idxCsf()) + "|" + norm(first.idxNm());
-      if (firstKey != null && firstKey.equals(lastFirstKey)) break;
-      lastFirstKey = firstKey;
+    for (var it : items) { // it: MarketIndexClient.OpenApiItem
+      String cls  = norm(it.idxCsf());
+      String name = norm(it.idxNm());
+      if (cls == null || name == null) continue;
 
-      for (var it : items) {
-        String cls = norm(it.idxCsf());
-        String name = norm(it.idxNm());
-        if (cls == null || name == null)
-          continue; // 키 누락 스킵
+      Integer cnt  = it.epyItmsCnt();
+      LocalDate bp = parseYmd(it.basPntm(), ymd);
+      Integer bidx = it.basIdx();
 
-        Integer cnt = it.epyItmsCnt();
-        LocalDate bp = parseYmd(it.basPntm(), ymd);
-        fetched++;
-
-        var existingOpt = repo.findByIndexClassificationAndIndexName(cls, name);
-        Integer bidx = it.basIdx();
-
-        if (existingOpt.isPresent()) {
-          var e = existingOpt.get();
-          boolean changed =
-              !Objects.equals(e.getEmployedItemsCount(), cnt) ||
-                  !Objects.equals(e.getBasePointInTime(), bp) ||
-                  !Objects.equals(e.getBaseIndex(), bidx);
-
-          if (changed) {
-            e.setEmployedItemsCount(cnt);
-            e.setBasePointInTime(bp);
-            e.setBaseIndex(bidx);
-            repo.save(e);
-            updated++;
-          }
-        } else {
-          var n = IndexInfo.builder()
-              .indexClassification(cls)
-              .indexName(name)
-              .employedItemsCount(cnt)
-              .basePointInTime(bp)
-              .baseIndex(bidx)
-              .sourceType(IndexSourceType.OPEN_API)
-              .favorite(false)
-              .build();
-          repo.save(n);
-          inserted++;
-        }
+      var existingOpt = repo.findByIndexClassificationAndIndexName(cls, name);
+      IndexInfo saved;
+      if (existingOpt.isPresent()) {
+        var e = existingOpt.get();
+        e.setEmployedItemsCount(cnt);
+        e.setBasePointInTime(bp);
+        e.setBaseIndex(bidx);
+        // sourceType/favorite은 보존 (필요시 e.setSourceType(OPEN_API) 적용)
+        saved = repo.save(e);
+      } else {
+        saved = repo.save(IndexInfo.builder()
+            .indexClassification(cls)
+            .indexName(name)
+            .employedItemsCount(cnt)
+            .basePointInTime(bp)
+            .baseIndex(bidx)
+            .sourceType(IndexSourceType.OPEN_API)
+            .favorite(false)
+            .build());
       }
-
-      // 종료 조건: 메타 우선, 없으면 하드리밋으로 안전 탈출
-      if (pr.pageNo() * pr.numOfRows() >= pr.totalCount()) break;
-      if (page >= HARD_PAGE_LIMIT) break;
-      page++;
+      result.add(toDto(saved));
     }
 
-    return new SyncResult(fetched, inserted, updated);
+    return result; // ← List<IndexInfoDto>
   }
 
   private static String norm(String s) {
@@ -108,5 +79,17 @@ public class IndexInfoSyncService {
   private static LocalDate parseYmd(String s, DateTimeFormatter fmt) {
     try { return (s == null || s.isBlank()) ? null : LocalDate.parse(s.trim(), fmt); }
     catch (Exception e) { return null; }
+  }
+  private static IndexInfoDto toDto(IndexInfo e) {
+    return new IndexInfoDto(
+        e.getId(),
+        e.getIndexClassification(),
+        e.getIndexName(),
+        e.getEmployedItemsCount(),
+        e.getBasePointInTime(),
+        e.getBaseIndex(),
+        e.getSourceType(),
+        e.isFavorite()
+    );
   }
 }
