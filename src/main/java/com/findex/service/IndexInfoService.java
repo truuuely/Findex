@@ -2,17 +2,21 @@ package com.findex.service;
 
 import com.findex.dto.indexinfo.IndexInfoCreateRequest;
 import com.findex.dto.indexinfo.IndexInfoDto;
+import com.findex.dto.indexinfo.IndexInfoQuery;
 import com.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.findex.dto.indexinfo.IndexInfoUpdateRequest;
+import com.findex.dto.response.CursorPageResponse;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
 import com.findex.mapper.IndexInfoMapper;
-import com.findex.repository.IndexInfoRepository;
+import com.findex.repository.indexinfo.IndexInfoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -21,6 +25,10 @@ public class IndexInfoService {
     private final IndexInfoRepository indexInfoRepository;
     private final AutoSyncConfigService autoSyncConfigService;
     private final IndexInfoMapper indexInfoMapper;
+
+    public CursorPageResponse findAll(IndexInfoQuery query) {
+        return indexInfoRepository.findAll(query);
+    }
 
     @Transactional
     public IndexInfoDto create(IndexInfoCreateRequest req) {

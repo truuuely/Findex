@@ -1,4 +1,4 @@
-package com.findex.repository;
+package com.findex.repository.indexinfo;
 
 import com.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.findex.entity.IndexInfo;
@@ -7,7 +7,7 @@ import com.findex.exception.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
+public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>, IndexInfoQueryRepository {
 
   List<IndexInfo> findAllByFavoriteIsTrue();
   List<IndexInfo> findAllByFavorite(boolean favorite);
