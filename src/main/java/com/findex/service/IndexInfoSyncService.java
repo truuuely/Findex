@@ -2,16 +2,13 @@ package com.findex.service;
 
 
 import com.findex.dto.indexinfo.IndexInfoDto;
-import com.findex.dto.syncjob.MarketIndexRoot;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
-import com.findex.enums.SourceType;
 import com.findex.openapi.MarketIndexClient;
-import com.findex.repository.indexinfo.IndexInfoRepository;
+import com.findex.repository.IndexInfoRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
