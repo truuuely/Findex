@@ -2,6 +2,7 @@ package com.findex.service;
 
 
 import com.findex.dto.dashboard.IndexPerformanceDto;
+import com.findex.dto.dashboard.IndexPerformanceRawDto;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.PeriodType;
 import com.findex.repository.IndexDataRepository;
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -21,10 +23,8 @@ import org.springframework.stereotype.Service;
 public class DashboardService {
 
   private final IndexInfoRepository indexInfoRepository;
-  private final IndexDataRepository indexDataRepository;
 
   public List<IndexPerformanceDto> getFavoriteIndexPerformances(PeriodType periodType) {
-    List<IndexInfo> favoriteIndices = indexInfoRepository.findAllByFavoriteIsTrue();
 
     LocalDate currentDate = LocalDate.now();
     LocalDate beforeDate = switch (periodType) {
@@ -33,36 +33,31 @@ public class DashboardService {
       case MONTHLY -> currentDate.minusMonths(1);
     };
 
-    return favoriteIndices.stream()
-        .map(indexInfo -> calculatePerformance(indexInfo, currentDate, beforeDate))
+    List<IndexPerformanceRawDto> rawDataList = indexInfoRepository.findPerformanceRawData(currentDate, beforeDate);
+
+    return rawDataList.stream()
+        .map(raw -> {
+          IndexInfo indexInfo = raw.indexInfo();
+          BigDecimal currentPrice = Optional.ofNullable(raw.currentPrice()).orElse(BigDecimal.ZERO);
+          BigDecimal beforePrice = Optional.ofNullable(raw.beforePrice()).orElse(BigDecimal.ZERO);
+
+          BigDecimal versus = currentPrice.subtract(beforePrice);
+          BigDecimal fluctuationRate = BigDecimal.ZERO;
+          if (beforePrice.compareTo(BigDecimal.ZERO) != 0) {
+            fluctuationRate = versus.divide(beforePrice, 4, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal("100"));
+          }
+
+          return new IndexPerformanceDto(
+              indexInfo.getId(),
+              indexInfo.getIndexClassification(),
+              indexInfo.getIndexName(),
+              currentPrice,
+              beforePrice,
+              versus,
+              fluctuationRate
+          );
+        })
         .collect(Collectors.toList());
-  }
-
-  private IndexPerformanceDto calculatePerformance(IndexInfo indexInfo, LocalDate currentDate, LocalDate beforeDate) {
-    Pageable pageable = PageRequest.of(0, 1);
-
-    List<BigDecimal> currentPriceList = indexDataRepository.findClosingPrice(indexInfo.getId(), currentDate, pageable);
-    List<BigDecimal> beforePriceList = indexDataRepository.findClosingPrice(indexInfo.getId(), beforeDate, pageable);
-
-    BigDecimal currentPrice = currentPriceList.isEmpty() ? BigDecimal.ZERO : currentPriceList.get(0);
-    BigDecimal beforePrice = beforePriceList.isEmpty() ? BigDecimal.ZERO : beforePriceList.get(0);
-
-    BigDecimal versus = currentPrice.subtract(beforePrice);
-
-    BigDecimal fluctuationRate = BigDecimal.ZERO;
-    if (beforePrice.compareTo(BigDecimal.ZERO) != 0) {
-      fluctuationRate = versus.divide(beforePrice, 4, RoundingMode.HALF_UP)
-          .multiply(new BigDecimal("100"));
-    }
-
-    return new IndexPerformanceDto(
-        indexInfo.getId(),
-        indexInfo.getIndexClassification(),
-        indexInfo.getIndexName(),
-        currentPrice,
-        beforePrice,
-        versus,
-        fluctuationRate
-    );
   }
 }
