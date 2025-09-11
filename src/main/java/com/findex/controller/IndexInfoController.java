@@ -7,6 +7,7 @@ import com.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.findex.dto.response.CursorPageResponse;
 import com.findex.service.IndexInfoService;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
