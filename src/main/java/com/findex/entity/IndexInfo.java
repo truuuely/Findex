@@ -1,5 +1,7 @@
 package com.findex.entity;
 
+import static com.findex.util.StringUtil.requireNonBlank;
+
 import com.findex.entity.base.BaseEntity;
 import com.findex.enums.IndexSourceType;
 import jakarta.persistence.CascadeType;
@@ -9,18 +11,17 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-@Builder //추가
 @Table(name = "index_info")
 public class IndexInfo extends BaseEntity {
 
@@ -46,21 +47,22 @@ public class IndexInfo extends BaseEntity {
     )
     private AutoSyncConfig autoSyncConfig;
 
+    @Builder
     public IndexInfo(
-        String indexClassification,
-        String indexName,
-        Integer employedItemsCount,
-        LocalDate basePointInTime,
-        Integer baseIndex,
-        IndexSourceType sourceType,
-        boolean favorite
+        @NonNull String indexClassification,
+        @NonNull String indexName,
+        @NonNull Integer employedItemsCount,
+        @NonNull LocalDate basePointInTime,
+        @NonNull Integer baseIndex,
+        @NonNull IndexSourceType sourceType,
+        @NonNull Boolean favorite
     ) {
-        this.indexClassification = Objects.requireNonNull(indexClassification, "indexClassification is null");
-        this.indexName = Objects.requireNonNull(indexName, "indexName is null");
-        this.employedItemsCount = Objects.requireNonNull(employedItemsCount, "employedItemsCount is null");
-        this.basePointInTime = Objects.requireNonNull(basePointInTime, "basePointInTime is null");
-        this.baseIndex = Objects.requireNonNull(baseIndex, "baseIndex is null");
-        this.sourceType = Objects.requireNonNull(sourceType, "sourceType is null");
+        this.indexClassification = requireNonBlank(indexClassification);
+        this.indexName = requireNonBlank(indexName);
+        this.employedItemsCount = employedItemsCount;
+        this.basePointInTime = basePointInTime;
+        this.baseIndex = baseIndex;
+        this.sourceType = sourceType;
         this.favorite = favorite;
         this.autoSyncConfig = new AutoSyncConfig(false, this);
     }
@@ -69,7 +71,7 @@ public class IndexInfo extends BaseEntity {
         Integer employedItemsCount,
         LocalDate basePointInTime,
         Integer baseIndex,
-        boolean favorite
+        Boolean favorite
     ) {
         if (employedItemsCount != null) {
             this.employedItemsCount = employedItemsCount;
@@ -80,7 +82,9 @@ public class IndexInfo extends BaseEntity {
         if (baseIndex != null) {
             this.baseIndex = baseIndex;
         }
-        this.favorite = favorite;
+        if (favorite != null) {
+            this.favorite = favorite;
+        }
         return this;
     }
 }
