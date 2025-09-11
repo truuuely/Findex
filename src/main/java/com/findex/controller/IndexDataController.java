@@ -2,7 +2,9 @@ package com.findex.controller;
 
 import com.findex.dto.indexdata.IndexDataCreateRequest;
 import com.findex.dto.indexdata.IndexDataDto;
+import com.findex.dto.indexdata.IndexDataQuery;
 import com.findex.dto.indexdata.IndexDataUpdateRequest;
+import com.findex.dto.response.CursorPageResponse;
 import com.findex.service.IndexDataService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,12 @@ public class IndexDataController {
     public ResponseEntity<IndexDataDto> update(@PathVariable Long id, @RequestBody IndexDataUpdateRequest request) {
         IndexDataDto indexDataDto = indexDataService.update(id, request);
         return ResponseEntity.ok(indexDataDto);
+    }
+
+    @GetMapping
+    public ResponseEntity<CursorPageResponse> findAll(@ModelAttribute IndexDataQuery indexDataQuery) {
+        CursorPageResponse cursorPageResponse = indexDataService.findAll(indexDataQuery);
+        return ResponseEntity.ok(cursorPageResponse);
     }
 
     @DeleteMapping("/{id}")
