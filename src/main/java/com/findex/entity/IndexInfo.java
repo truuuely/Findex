@@ -46,20 +46,20 @@ public class IndexInfo extends BaseEntity {
     private boolean favorite;
 
     @OneToOne(
-        mappedBy = "indexInfo",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
+            mappedBy = "indexInfo",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private AutoSyncConfig autoSyncConfig;
 
     public IndexInfo(
-        String indexClassification,
-        String indexName,
-        Integer employedItemsCount,
-        LocalDate basePointInTime,
-        Integer baseIndex,
-        IndexSourceType sourceType,
-        boolean favorite
+            String indexClassification,
+            String indexName,
+            Integer employedItemsCount,
+            LocalDate basePointInTime,
+            Integer baseIndex,
+            IndexSourceType sourceType,
+            boolean favorite
     ) {
         this.indexClassification = indexClassification;
         this.indexName = indexName;
