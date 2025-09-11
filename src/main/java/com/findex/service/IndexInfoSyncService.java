@@ -44,13 +44,11 @@ public class IndexInfoSyncService {
             var existingOpt = repo.findByIndexClassificationAndIndexName(cls, name);
             IndexInfo saved;
             if (existingOpt.isPresent()) {
-                var e = existingOpt.get();
-                e.setEmployedItemsCount(cnt);
-                e.setBasePointInTime(bp);
-                e.setBaseIndex(bidx);
+                IndexInfo indexInfo = existingOpt.get();
+                indexInfo.update(cnt, bp, bidx, null);
                 // sourceType/favorite은 보존 (필요시 e.setSourceType(OPEN_API) 적용)
-                saved = repo.save(e);
-            } else {
+                saved = repo.save(indexInfo);
+            } else {//new로 변경
                 saved = repo.save(new IndexInfo(cls, name, cnt, bp, bidx, IndexSourceType.OPEN_API, false));
             }
             result.add(toDto(saved));
