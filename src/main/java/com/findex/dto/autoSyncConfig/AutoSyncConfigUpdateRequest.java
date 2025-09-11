@@ -1,5 +1,9 @@
 package com.findex.dto.autoSyncConfig;
 
-public record AutoSyncConfigUpdateRequest(boolean enabled) {
+import jakarta.validation.constraints.NotNull;
 
+public record AutoSyncConfigUpdateRequest(
+        @NotNull
+        boolean enabled
+) {
 }
