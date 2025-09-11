@@ -2,11 +2,13 @@ package com.findex.service;
 
 import com.findex.dto.indexdata.IndexDataCreateRequest;
 import com.findex.dto.indexdata.IndexDataDto;
+import com.findex.dto.indexdata.IndexDataQuery;
 import com.findex.dto.indexdata.IndexDataUpdateRequest;
+import com.findex.dto.response.CursorPageResponse;
 import com.findex.entity.IndexData;
 import com.findex.enums.IndexSourceType;
 import com.findex.mapper.IndexDataMapper;
-import com.findex.repository.IndexDataRepository;
+import com.findex.repository.indexdata.IndexDataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,10 @@ public class IndexDataService {
         ));
 
         return indexDataMapper.toDto(indexData);
+    }
+
+    public CursorPageResponse findAll(IndexDataQuery indexDataQuery) {
+        return indexDataRepository.findAll(indexDataQuery);
     }
 
     @Transactional
