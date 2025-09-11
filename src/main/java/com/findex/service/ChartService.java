@@ -6,7 +6,8 @@ import com.findex.entity.IndexData;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.ChartPeriodType;
 import com.findex.repository.IndexDataRepository;
-import com.findex.repository.IndexInfoRepository;
+
+import com.findex.repository.indexinfo.IndexInfoRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
