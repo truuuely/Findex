@@ -28,18 +28,18 @@ public class IndexInfoService {
     }
 
     @Transactional
-    public IndexInfoDto create(IndexInfoCreateRequest req) {
+    public IndexInfoDto create(IndexInfoCreateRequest request) {
         IndexInfo indexInfo = indexInfoRepository.save(
-                new IndexInfo(
-                        req.indexClassification(),
-                        req.indexName(),
-                        req.employedItemsCount(),
-                        req.basePointInTime(),
-                        req.baseIndex(),
-                        IndexSourceType.USER,
-                    req.favorite() != null && req.favorite()
-                )
-        );
+                IndexInfo.builder()
+                    .indexClassification(request.indexClassification())
+                    .indexName(request.indexName())
+                    .employedItemsCount(request.employedItemsCount())
+                    .basePointInTime(request.basePointInTime())
+                    .baseIndex(request.baseIndex())
+                    .sourceType(IndexSourceType.USER)
+                    .favorite(request.favorite() != null && request.favorite())
+                    .build()
+                );
 
         return indexInfoMapper.toDto(indexInfo);
     }
