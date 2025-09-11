@@ -64,11 +64,9 @@ public class IndexInfoSyncService {
     }
 
     private static LocalDate parseYmd(String s, DateTimeFormatter fmt) {
-        try {
-            return (s == null || s.isBlank()) ? null : LocalDate.parse(s.trim(), fmt);
-        } catch (Exception e) {
-            return null;
-        }
+            if (s == null || s.isBlank())
+                throw new IllegalArgumentException("기준일이 누락되었습니다.");
+            return LocalDate.parse(s.trim(), fmt);
     }
 
     private static IndexInfoDto toDto(IndexInfo e) {
