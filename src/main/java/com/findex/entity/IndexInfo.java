@@ -1,5 +1,7 @@
 package com.findex.entity;
 
+import static com.findex.util.StringUtil.requireNonBlank;
+
 import com.findex.entity.base.BaseEntity;
 import com.findex.enums.IndexSourceType;
 import jakarta.persistence.CascadeType;
@@ -14,14 +16,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.NonNull;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-@Builder //추가
 @Table(name = "index_info")
 public class IndexInfo extends BaseEntity {
 
@@ -29,45 +29,62 @@ public class IndexInfo extends BaseEntity {
 
     private String indexName;
 
-    @Setter
     private Integer employedItemsCount;
 
-    @Setter
     private LocalDate basePointInTime;
 
-    @Setter
     private Integer baseIndex;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     private IndexSourceType sourceType;
 
-    @Setter
     private boolean favorite;
 
     @OneToOne(
-            mappedBy = "indexInfo",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+        mappedBy = "indexInfo",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
     )
     private AutoSyncConfig autoSyncConfig;
 
+    @Builder
     public IndexInfo(
-            String indexClassification,
-            String indexName,
-            Integer employedItemsCount,
-            LocalDate basePointInTime,
-            Integer baseIndex,
-            IndexSourceType sourceType,
-            boolean favorite
+        @NonNull String indexClassification,
+        @NonNull String indexName,
+        @NonNull Integer employedItemsCount,
+        @NonNull LocalDate basePointInTime,
+        @NonNull Integer baseIndex,
+        @NonNull IndexSourceType sourceType,
+        @NonNull Boolean favorite
     ) {
-        this.indexClassification = indexClassification;
-        this.indexName = indexName;
+        this.indexClassification = requireNonBlank(indexClassification);
+        this.indexName = requireNonBlank(indexName);
         this.employedItemsCount = employedItemsCount;
         this.basePointInTime = basePointInTime;
         this.baseIndex = baseIndex;
         this.sourceType = sourceType;
         this.favorite = favorite;
         this.autoSyncConfig = new AutoSyncConfig(false, this);
+    }
+
+    public IndexInfo update(
+        Integer employedItemsCount,
+        LocalDate basePointInTime,
+        Integer baseIndex,
+        Boolean favorite
+    ) {
+        if (employedItemsCount != null) {
+            this.employedItemsCount = employedItemsCount;
+        }
+        if (basePointInTime != null) {
+            this.basePointInTime = basePointInTime;
+        }
+        if (baseIndex != null) {
+            this.baseIndex = baseIndex;
+        }
+        if (favorite != null) {
+            this.favorite = favorite;
+        }
+        return this;
     }
 }
