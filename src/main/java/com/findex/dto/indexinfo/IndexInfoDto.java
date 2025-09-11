@@ -12,6 +12,4 @@ public record IndexInfoDto(
     Integer baseIndex,
     IndexSourceType sourceType,
     boolean favorite
-) {
-
-}
+) {}

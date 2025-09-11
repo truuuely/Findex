@@ -20,6 +20,4 @@ public record IndexInfoCreateRequest(
     int baseIndex,
 
     Boolean favorite
-) {
-
-}
+) {}
