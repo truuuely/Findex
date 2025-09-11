@@ -28,18 +28,18 @@ public class IndexInfoService {
     }
 
     @Transactional
-    public IndexInfoDto create(IndexInfoCreateRequest req) {
+    public IndexInfoDto create(IndexInfoCreateRequest request) {
         IndexInfo indexInfo = indexInfoRepository.save(
-                new IndexInfo(
-                        req.indexClassification(),
-                        req.indexName(),
-                        req.employedItemsCount(),
-                        req.basePointInTime(),
-                        req.baseIndex(),
-                        IndexSourceType.USER,
-                    req.favorite() != null && req.favorite()
-                )
-        );
+                IndexInfo.builder()
+                    .indexClassification(request.indexClassification())
+                    .indexName(request.indexName())
+                    .employedItemsCount(request.employedItemsCount())
+                    .basePointInTime(request.basePointInTime())
+                    .baseIndex(request.baseIndex())
+                    .sourceType(IndexSourceType.USER)
+                    .favorite(request.favorite() != null && request.favorite())
+                    .build()
+                );
 
         return indexInfoMapper.toDto(indexInfo);
     }
@@ -49,25 +49,16 @@ public class IndexInfoService {
     }
 
     @Transactional
-    public IndexInfoDto update(Long id, IndexInfoUpdateRequest req) {
+    public IndexInfoDto update(Long id, IndexInfoUpdateRequest request) {
 
         IndexInfo indexInfo = indexInfoRepository.getOrThrow(id);
 
-        if (req.employedItemsCount() != null) {
-            indexInfo.setEmployedItemsCount(req.employedItemsCount());
-        }
-
-        if (req.basePointInTime() != null) {
-            indexInfo.setBasePointInTime(req.basePointInTime());
-        }
-
-        if (req.baseIndex() != null) {
-            indexInfo.setBaseIndex(req.baseIndex());
-        }
-
-        if (req.favorite() != null) {
-            indexInfo.setFavorite(req.favorite());
-        }
+        indexInfo.update(
+            request.employedItemsCount(),
+            request.basePointInTime(),
+            request.baseIndex(),
+            request.favorite()
+        );
 
         return indexInfoMapper.toDto(indexInfo);
     }

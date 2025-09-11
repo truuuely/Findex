@@ -7,13 +7,13 @@ import com.findex.enums.IndexSourceType;
 import com.findex.openapi.MarketIndexClient;
 import com.findex.repository.indexinfo.IndexInfoRepository;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -42,21 +42,19 @@ public class IndexInfoSyncService {
       LocalDate bp = parseYmd(it.basPntm(), ymd);
       Integer bidx = it.basIdx();
 
-      var existingOpt = repo.findByIndexClassificationAndIndexName(cls, name);
+      Optional<IndexInfo> existingOpt = repo.findByIndexClassificationAndIndexName(cls, name);
       IndexInfo saved;
       if (existingOpt.isPresent()) {
-        var e = existingOpt.get();
-        e.setEmployedItemsCount(cnt);
-        e.setBasePointInTime(bp);
-        e.setBaseIndex(bidx);
+        IndexInfo indexInfo = existingOpt.get();
+        indexInfo.update(cnt, bp, bidx, null);
         // sourceType/favorite은 보존 (필요시 e.setSourceType(OPEN_API) 적용)
-        saved = repo.save(e);
+        saved = repo.save(indexInfo);
       } else {
         saved = repo.save(IndexInfo.builder()
             .indexClassification(cls)
             .indexName(name)
             .employedItemsCount(cnt)
-            .basePointInTime(bp)
+            .basePointInTime(bp) // 널 가능성 체크 부탁드립니다
             .baseIndex(bidx)
             .sourceType(IndexSourceType.OPEN_API)
             .favorite(false)
