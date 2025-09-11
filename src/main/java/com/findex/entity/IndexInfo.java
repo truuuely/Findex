@@ -64,4 +64,23 @@ public class IndexInfo extends BaseEntity {
         this.favorite = favorite;
         this.autoSyncConfig = new AutoSyncConfig(false, this);
     }
+
+    public IndexInfo update(
+        Integer employedItemsCount,
+        LocalDate basePointInTime,
+        Integer baseIndex,
+        boolean favorite
+    ) {
+        if (employedItemsCount != null) {
+            this.employedItemsCount = employedItemsCount;
+        }
+        if (basePointInTime != null) {
+            this.basePointInTime = basePointInTime;
+        }
+        if (baseIndex != null) {
+            this.baseIndex = baseIndex;
+        }
+        this.favorite = favorite;
+        return this;
+    }
 }

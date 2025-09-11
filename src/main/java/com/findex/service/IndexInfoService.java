@@ -49,25 +49,16 @@ public class IndexInfoService {
     }
 
     @Transactional
-    public IndexInfoDto update(Long id, IndexInfoUpdateRequest req) {
+    public IndexInfoDto update(Long id, IndexInfoUpdateRequest request) {
 
         IndexInfo indexInfo = indexInfoRepository.getOrThrow(id);
 
-        if (req.employedItemsCount() != null) {
-            indexInfo.setEmployedItemsCount(req.employedItemsCount());
-        }
-
-        if (req.basePointInTime() != null) {
-            indexInfo.setBasePointInTime(req.basePointInTime());
-        }
-
-        if (req.baseIndex() != null) {
-            indexInfo.setBaseIndex(req.baseIndex());
-        }
-
-        if (req.favorite() != null) {
-            indexInfo.setFavorite(req.favorite());
-        }
+        indexInfo.update(
+            request.employedItemsCount(),
+            request.basePointInTime(),
+            request.baseIndex(),
+            request.favorite()
+        );
 
         return indexInfoMapper.toDto(indexInfo);
     }
