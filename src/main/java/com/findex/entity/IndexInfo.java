@@ -9,13 +9,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -29,20 +28,15 @@ public class IndexInfo extends BaseEntity {
 
     private String indexName;
 
-    @Setter
     private Integer employedItemsCount;
 
-    @Setter
     private LocalDate basePointInTime;
 
-    @Setter
     private Integer baseIndex;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     private IndexSourceType sourceType;
 
-    @Setter
     private boolean favorite;
 
     @OneToOne(
@@ -61,12 +55,12 @@ public class IndexInfo extends BaseEntity {
         IndexSourceType sourceType,
         boolean favorite
     ) {
-        this.indexClassification = indexClassification;
-        this.indexName = indexName;
-        this.employedItemsCount = employedItemsCount;
-        this.basePointInTime = basePointInTime;
-        this.baseIndex = baseIndex;
-        this.sourceType = sourceType;
+        this.indexClassification = Objects.requireNonNull(indexClassification, "indexClassification is null");
+        this.indexName = Objects.requireNonNull(indexName, "indexName is null");
+        this.employedItemsCount = Objects.requireNonNull(employedItemsCount, "employedItemsCount is null");
+        this.basePointInTime = Objects.requireNonNull(basePointInTime, "basePointInTime is null");
+        this.baseIndex = Objects.requireNonNull(baseIndex, "baseIndex is null");
+        this.sourceType = Objects.requireNonNull(sourceType, "sourceType is null");
         this.favorite = favorite;
         this.autoSyncConfig = new AutoSyncConfig(false, this);
     }
