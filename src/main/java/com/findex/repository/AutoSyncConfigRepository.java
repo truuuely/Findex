@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, Long> {
+
 }
