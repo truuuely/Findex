@@ -3,18 +3,17 @@ package com.findex.entity;
 import com.findex.entity.base.BaseEntity;
 import com.findex.enums.IndexSourceType;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 @Getter
-@Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Entity
 @Table(name = "index_data")
 public class IndexData extends BaseEntity {
 

@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AutoSyncConfigMapper {
+
     @Mapping(source = "indexInfo.id", target = "indexInfoId")
     @Mapping(source = "indexInfo.indexClassification", target = "indexClassification")
     @Mapping(source = "indexInfo.indexName", target = "indexName")
