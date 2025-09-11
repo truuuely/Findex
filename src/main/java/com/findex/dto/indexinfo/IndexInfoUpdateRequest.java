@@ -7,6 +7,4 @@ public record IndexInfoUpdateRequest(
     LocalDate basePointInTime,
     Integer baseIndex,
     Boolean favorite
-) {
-
-}
+) {}
