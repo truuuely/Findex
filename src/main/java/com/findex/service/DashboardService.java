@@ -5,8 +5,7 @@ import com.findex.dto.dashboard.IndexPerformanceDto;
 import com.findex.dto.dashboard.IndexPerformanceRawDto;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.PeriodType;
-import com.findex.repository.IndexDataRepository;
-import com.findex.repository.IndexInfoRepository;
+import com.findex.repository.indexinfo.IndexInfoRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -14,12 +13,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DashboardService {
 
   private final IndexInfoRepository indexInfoRepository;
