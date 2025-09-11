@@ -31,7 +31,7 @@ public class IndexInfoQueryRepositoryImpl implements IndexInfoQueryRepository{
     public CursorPageResponse findAll(IndexInfoQuery q) {
         // --- 0) 공통 파라미터 정규화
         int size = (q.size() != null && q.size() > 0) ? q.size() : IndexInfoQuery.DEFAULT_SIZE;
-        IndexSortField sortField = IndexSortField.parse(q.sortField());
+        IndexSortField sortField = IndexSortField.from(q.sortField());
         boolean asc = "asc".equalsIgnoreCase(q.sortDirection());
 
         // --- 1) 필터(부분/완전 일치)

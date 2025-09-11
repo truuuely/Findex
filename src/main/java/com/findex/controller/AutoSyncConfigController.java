@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/auto-sync-configs")
+@RequestMapping("/api/auto-sync-configs")
 @RequiredArgsConstructor
 public class AutoSyncConfigController {
     private final AutoSyncConfigService autoSyncConfigService;

@@ -37,8 +37,8 @@ public class IndexInfoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public IndexInfoDto create(@RequestBody @Valid IndexInfoCreateRequest req) {
-        return indexInfoService.create(req);
+    public IndexInfoDto create(@RequestBody @Valid IndexInfoCreateRequest request) {
+        return indexInfoService.create(request);
     }
 
     @GetMapping("/{id}")
@@ -49,8 +49,8 @@ public class IndexInfoController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public IndexInfoDto update(@PathVariable Long id, @RequestBody @Valid IndexInfoUpdateRequest req) {
-        return indexInfoService.update(id, req);
+    public IndexInfoDto update(@PathVariable Long id, @RequestBody @Valid IndexInfoUpdateRequest request) {
+        return indexInfoService.update(id, request);
     }
 
     @DeleteMapping("/{id}")

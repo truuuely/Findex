@@ -12,8 +12,7 @@ public record IndexInfoCreateRequest(
     @NotBlank
     String indexName,
 
-    @NotNull
-    Integer employedItemsCount,
+    int employedItemsCount,
 
     @NotNull
     LocalDate basePointInTime,

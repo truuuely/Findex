@@ -1,6 +1,5 @@
 package com.findex.dto.indexinfo;
 
-
 public record IndexInfoQuery(
     String indexClassification,
     String indexName,

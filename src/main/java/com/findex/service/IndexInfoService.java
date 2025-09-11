@@ -37,9 +37,10 @@ public class IndexInfoService {
                         req.basePointInTime(),
                         req.baseIndex(),
                         IndexSourceType.USER,
-                        req.favorite() != null && req.favorite()
+                    req.favorite() != null && req.favorite()
                 )
         );
+
         return indexInfoMapper.toDto(indexInfo);
     }
 

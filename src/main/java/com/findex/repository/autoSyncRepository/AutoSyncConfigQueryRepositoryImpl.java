@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.findex.enums.AutoSyncConfigSortField.parse;
 import static org.springframework.util.StringUtils.hasText;
 
 @Repository
@@ -26,10 +27,6 @@ public class AutoSyncConfigQueryRepositoryImpl implements AutoSyncConfigQueryRep
 
     @Override
     public CursorPageResponse findAll(AutoSyncConfigQuery configQuery) {
-        int size = (configQuery.size() != null && configQuery.size() > 0) ? configQuery.size() : AutoSyncConfigQuery.SIZE_FIELD;
-        AutoSyncConfigSortField sortField = AutoSyncConfigSortField.parse(configQuery.sortField());
-
-
         List<AutoSyncConfigDto> rows = queryFactory
                 .select(Projections.constructor(AutoSyncConfigDto.class,
                         QAutoSyncConfig.autoSyncConfig.id,
@@ -42,33 +39,11 @@ public class AutoSyncConfigQueryRepositoryImpl implements AutoSyncConfigQueryRep
                 .where(
                         configQuery.indexInfoId() != null ? QAutoSyncConfig.autoSyncConfig.indexInfo.id.eq(configQuery.indexInfoId()) : null,
                         configQuery.enabled() != null ? QAutoSyncConfig.autoSyncConfig.enabled.eq(configQuery.enabled()) : null,
-                        buildRangeFromCursor(sortField, "asc".equalsIgnoreCase(configQuery.sortDirection()), configQuery.idAfter(), configQuery.cursor())
+                        buildRangeFromCursor(parse(configQuery.sortField()), configQuery.direction(configQuery.sortDirection()), configQuery.idAfter(), configQuery.cursor())
                 )
-                .orderBy(buildOrderSpecifiers(sortField, "asc".equalsIgnoreCase(configQuery.sortDirection())).toArray(OrderSpecifier[]::new))
-                .limit(size + 1)
+                .orderBy(buildOrderSpecifiers(parse(configQuery.sortField()), configQuery.direction(configQuery.sortDirection())).toArray(OrderSpecifier[]::new))
+                .limit(configQuery.size() + 1)
                 .fetch();
-
-
-        boolean hasNext = rows.size() > size;
-        if (!hasNext) {
-            return new CursorPageResponse(
-                    rows,
-                    null,
-                    null,
-                    size,
-                    rows.size(),
-                    false
-            );
-        }
-
-        rows = rows.subList(0, size);
-
-        AutoSyncConfigDto last = rows.get(rows.size() - 1);
-        Long nextIdAfter = last.id();
-        String nextCursor = switch (sortField) {
-            case INDEX_INFO_INDEX_NAME -> last.indexName();
-            case ENABLED -> String.valueOf(last.enabled());
-        };
 
         Long totalElements = queryFactory
                 .select(QAutoSyncConfig.autoSyncConfig.count())
@@ -76,13 +51,36 @@ public class AutoSyncConfigQueryRepositoryImpl implements AutoSyncConfigQueryRep
                 .where(configQuery.indexInfoId() != null ? QAutoSyncConfig.autoSyncConfig.indexInfo.id.eq(configQuery.indexInfoId()) : null,
                         configQuery.enabled() != null ? QAutoSyncConfig.autoSyncConfig.enabled.eq(configQuery.enabled()) : null)
                 .fetchOne();
+        long total = totalElements != null ? totalElements : 0;
+
+        boolean hasNext = rows.size() > configQuery.size();
+        if (!hasNext) {
+            return new CursorPageResponse(
+                    rows,
+                    null,
+                    null,
+                    configQuery.size(),
+                    total,
+                    false
+            );
+        }
+
+        rows = rows.subList(0, configQuery.size());
+
+        AutoSyncConfigDto last = rows.get(rows.size() - 1);
+        Long nextIdAfter = last.id();
+        String nextCursor = switch (parse(configQuery.sortField())) {
+            case INDEX_INFO_INDEX_NAME -> last.indexName();
+            case ENABLED -> String.valueOf(last.enabled());
+        };
+
 
         return new CursorPageResponse(
                 rows,
                 nextCursor,
                 nextIdAfter,
-                size,
-                totalElements != null ? totalElements : 0,
+                configQuery.size(),
+                total,
                 true
         );
     }

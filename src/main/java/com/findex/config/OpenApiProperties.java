@@ -6,4 +6,6 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties(prefix = "findex.openapi")
-public record OpenApiProperties(@NotBlank String baseUrl, String serviceKey) {}
+public record OpenApiProperties(@NotBlank String baseUrl, String serviceKey) {
+
+}
