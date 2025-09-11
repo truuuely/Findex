@@ -13,15 +13,15 @@ import org.springframework.data.repository.query.Param;
 
 public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>, IndexInfoQueryRepository {
 
-  Optional<IndexInfo> findByIndexClassificationAndIndexName(String indexClassification, String indexName);
-
-  @Query("""
+    @Query("""
               SELECT new com.findex.dto.indexinfo.IndexInfoSummaryDto(
                   i.id, i.indexClassification, i.indexName
               )
               FROM IndexInfo i
           """)
-      List<IndexInfoSummaryDto> findAllSummaries();
+    List<IndexInfoSummaryDto> findAllSummaries();
+
+    Optional<IndexInfo> findByIndexClassificationAndIndexName(String indexClassification, String indexName);
 
     @Query("""
               SELECT new com.findex.dto.dashboard.IndexPerformanceRawDto(

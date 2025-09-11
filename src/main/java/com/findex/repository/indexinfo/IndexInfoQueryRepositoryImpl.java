@@ -70,9 +70,9 @@ public class IndexInfoQueryRepositoryImpl implements IndexInfoQueryRepository{
         return new CursorPageResponse(
             rows,
             switch (q.sortFieldEnum()) {
-                case INDEX_CLASSIFICATION -> last.indexClassification();
                 case INDEX_NAME -> last.indexName();
                 case EMPLOYED_ITEMS_COUNT -> String.valueOf(last.employedItemsCount());
+                default -> last.indexClassification();
             },
             last.id(),
             q.size(),
