@@ -6,13 +6,16 @@ import com.findex.entity.IndexInfo;
 import com.findex.exception.NotFoundException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>, IndexInfoQueryRepository {
 
-      @Query("""
+  Optional<IndexInfo> findByIndexClassificationAndIndexName(String indexClassification, String indexName);
+
+  @Query("""
               SELECT new com.findex.dto.indexinfo.IndexInfoSummaryDto(
                   i.id, i.indexClassification, i.indexName
               )

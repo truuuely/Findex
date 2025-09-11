@@ -2,8 +2,6 @@ package com.findex.openapi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.findex.config.OpenApiProperties;
-import com.findex.dto.syncjob.MarketIndexRoot;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

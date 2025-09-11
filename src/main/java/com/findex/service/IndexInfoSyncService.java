@@ -5,7 +5,7 @@ import com.findex.dto.indexinfo.IndexInfoDto;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
 import com.findex.openapi.MarketIndexClient;
-import com.findex.repository.IndexInfoRepository;
+import com.findex.repository.indexinfo.IndexInfoRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
