@@ -1,8 +1,5 @@
 package com.findex.enums;
 
-import lombok.Getter;
-
-@Getter
 public enum IndexDataSortField {
     BASE_DATE("baseDate"),
     MARKET_PRICE("marketPrice"),
@@ -23,7 +20,7 @@ public enum IndexDataSortField {
 
     public static IndexDataSortField from(String field) {
         for (IndexDataSortField value : values()) {
-            if (value.getField().equals(field)) {
+            if (value.field.equals(field)) {
                 return value;
             }
         }
