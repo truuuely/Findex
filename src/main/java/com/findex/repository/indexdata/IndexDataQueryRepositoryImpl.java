@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.findex.entity.QIndexData.indexData;
 
@@ -61,6 +62,20 @@ public class IndexDataQueryRepositoryImpl implements IndexDataQueryRepository {
                 totalElements,
                 true
         );
+    }
+
+    @Override
+    public Stream<IndexData> findAllForExport(IndexDataQuery indexDataQuery) {
+        IndexDataSortField sortField = indexDataQuery.getSortFieldEnum();
+        String sortDirection = indexDataQuery.sortDirection().toUpperCase();
+
+        BooleanExpression indexInfoIdEquals = indexDataQuery.indexInfoId() != null ? indexData.indexInfoId.eq(indexDataQuery.indexInfoId()) : null;
+
+        return queryFactory.selectFrom(indexData)
+                .where(indexInfoIdEquals,
+                        indexData.baseDate.goe(indexDataQuery.startDate()).and(indexData.baseDate.loe(indexDataQuery.endDate())))
+                .orderBy(createOrderSpecifiers(sortField, sortDirection))
+                .stream();
     }
 
     private OrderSpecifier<?>[] createOrderSpecifiers(IndexDataSortField sortField, String sortDirection) {
