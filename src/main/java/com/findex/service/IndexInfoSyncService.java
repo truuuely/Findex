@@ -33,19 +33,19 @@ public class IndexInfoSyncService {
         List<IndexInfoDto> out = new ArrayList<>();
 
         for (var it : pr.items()) {
-            // 1) 값 정리
+            //값 정리
             String cls  = norm(it.idxCsf());
             String name = norm(it.idxNm());
             Integer cnt = it.epyItmsCnt();
             LocalDate bp = parseYmd(it.basPntm(), ymd);
             Integer bidx = it.basIdx();
 
-            // 2) null 있으면 생성/업데이트 모두 스킵 (요구사항: null 값은 아예 제외)
+            //null 있으면 생성/업데이트 모두 스킵해서 호출 (요구사항 개수와 같음)
             if (cls == null || name == null || cnt == null || bp == null || bidx == null) {
                 continue;
             }
 
-            // 3) upsert (빌더 사용 안 함)
+            // 빌더 제거 후 upsert 사용
             Optional<IndexInfo> exist = repo.findByIndexClassificationAndIndexName(cls, name);
             IndexInfo saved;
             if (exist.isPresent()) {
@@ -53,7 +53,7 @@ public class IndexInfoSyncService {
                 e.update(cnt, bp, bidx, null);              // null 무시 업데이트
                 saved = repo.save(e);
             } else {
-                // 생성자 직접 호출 (필수값 모두 non-null)
+                // 생성자 직접 호출
                 saved = repo.save(new IndexInfo(
                     cls,
                     name,

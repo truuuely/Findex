@@ -3,9 +3,6 @@ package com.findex.openapi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.findex.config.OpenApiProperties;
-import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -25,7 +22,7 @@ public class MarketIndexClient {
   private final OpenApiProperties props;
   private final ObjectMapper om;
 
-  // [A] 지수정보(목록)
+  // 지수정보
   public PageResult callGetStockMarketIndex(int pageNo, int numOfRows) {
     String uri = UriComponentsBuilder
         .fromPath("/GetMarketIndexInfoService/getStockMarketIndex")
@@ -63,7 +60,7 @@ public class MarketIndexClient {
     }
   }
 
-  // [B] 지수데이터(기간/지수명)  — 같은 InfoService 사용
+  //지수데이터
   public IndexDataPageResult callGetStockMarketIndexData(
       String idxNm, String idxCsf, LocalDate from, LocalDate to, int pageNo, int numOfRows) {
 
@@ -78,7 +75,7 @@ public class MarketIndexClient {
         .queryParam("endBasDt", to.format(ymd));
 
     if (idxNm  != null && !idxNm.isBlank())  ub.queryParam("idxNm", idxNm);
-    if (idxCsf != null && !idxCsf.isBlank()) ub.queryParam("idxCsf", idxCsf); // ✅ 분류까지 전달
+    if (idxCsf != null && !idxCsf.isBlank()) ub.queryParam("idxCsf", idxCsf);
 
     String uri = ub.toUriString();
     String body = client.get().uri(uri).retrieve().body(String.class);
@@ -107,7 +104,7 @@ public class MarketIndexClient {
     }
   }
 
-  // ===== 파서들 =====
+  // 파싱
   private static OpenApiItem convertInfo(JsonNode n) {
     return new OpenApiItem(
         text(n, "idxCsf"),
@@ -118,11 +115,11 @@ public class MarketIndexClient {
     );
   }
 
-  // basDt/가격 필드 alias 커버 + idxNm 포함 (fallback 필터용)
+  // basDt/가격 필드 alias 커버 + idxNm 포함
   private static OpenApiIndexDataItem convertData(JsonNode n) {
     LocalDate baseDate = parseDate(text(n, "basDt", "baseDate", "trdDd"));
     return new OpenApiIndexDataItem(
-        text(n, "idxNm"), // ✅ indexName 포함
+        text(n, "idxNm"),
         baseDate,
         decimal(n, "mkp", "marketPrice"),
         decimal(n, "clpr", "closingPrice"),
@@ -137,7 +134,7 @@ public class MarketIndexClient {
   }
 
 
-  // ===== 헬퍼들(각 1개씩만!) =====
+  // 헬퍼
   private static String text(JsonNode n, String... fields) {
     for (String f : fields) {
       JsonNode v = n.get(f);
