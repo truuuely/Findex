@@ -5,16 +5,16 @@ import com.findex.dto.dashboard.IndexChartDto;
 import com.findex.entity.IndexData;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.ChartPeriodType;
-import com.findex.repository.IndexDataRepository;
-
+import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

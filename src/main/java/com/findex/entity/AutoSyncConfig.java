@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 import java.util.NoSuchElementException;
@@ -16,8 +15,6 @@ import java.util.NoSuchElementException;
 @Entity
 @Table(name = "auto_sync_config")
 public class AutoSyncConfig extends BaseEntity {
-
-    @Setter
     @Column(nullable = false)
     private boolean enabled;
 
