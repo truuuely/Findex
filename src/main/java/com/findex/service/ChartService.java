@@ -5,6 +5,7 @@ import com.findex.dto.dashboard.IndexChartDto;
 import com.findex.entity.IndexData;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.ChartPeriodType;
+import com.findex.exception.NotFoundException;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
 import java.math.BigDecimal;
@@ -27,7 +28,7 @@ public class ChartService {
   public IndexChartDto getChartData(Long indexInfoId, ChartPeriodType periodType) {
 
     IndexInfo indexInfo = indexInfoRepository.findById(indexInfoId)
-        .orElseThrow(() -> new IllegalArgumentException("Index not found"));
+        .orElseThrow(() -> new NotFoundException("Index not found"));
 
     LocalDate startDate = LocalDate.now();
     switch (periodType) {
