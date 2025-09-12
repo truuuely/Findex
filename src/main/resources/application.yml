@@ -13,5 +13,5 @@ springdoc:
 
 findex:
   openapi:
-    base-url: https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService
+    base-url: https://apis.data.go.kr/1160100/service
     service-key: ${OPENAPI_SERVICE_KEY:}

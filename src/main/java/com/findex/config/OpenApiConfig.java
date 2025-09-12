@@ -5,4 +5,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(OpenApiProperties.class)
-public class OpenApiConfig {}
+public class OpenApiConfig {
+}
