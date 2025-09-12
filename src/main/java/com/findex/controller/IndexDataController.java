@@ -55,6 +55,7 @@ public class IndexDataController {
         response.setContentType("text/csv; charset=UTF-8");
         String fileName = String.format("index-data-export-%s.csv", LocalDate.now());
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 
         try (OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8)) {
             indexDataExportService.generateCSV(indexDataQuery, writer);
