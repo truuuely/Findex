@@ -39,14 +39,11 @@ SELECT new com.findex.dto.syncjob.IndexDataJoinedRow(
   )
   FROM IndexData d, IndexInfo i
   WHERE i.id = d.indexInfoId
+    AND i.id = :indexInfoId
     AND d.baseDate BETWEEN :from AND :to
-    AND (
-      :indexName IS NULL OR :indexName = '' OR
-      function('REPLACE', i.indexName, ' ', '') = function('REPLACE', :indexName, ' ', '')
-    )
-  ORDER BY i.indexName ASC, d.baseDate DESC
+  ORDER BY d.baseDate DESC
 """)
-  List<IndexDataJoinedRow> findJoinedSorted(@Param("from") LocalDate from,
-      @Param("to") LocalDate to,
-      @Param("indexName") String indexName);
+  List<IndexDataJoinedRow> findJoinedSortedByIndexId(@Param("indexInfoId") Long indexInfoId,
+      @Param("from") LocalDate from,
+      @Param("to") LocalDate to);
 }

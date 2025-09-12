@@ -65,7 +65,7 @@ public class MarketIndexClient {
 
   // [B] 지수데이터(기간/지수명)  — 같은 InfoService 사용
   public IndexDataPageResult callGetStockMarketIndexData(
-      String idxNm, LocalDate from, LocalDate to, int pageNo, int numOfRows) {
+      String idxNm, String idxCsf, LocalDate from, LocalDate to, int pageNo, int numOfRows) {
 
     DateTimeFormatter ymd = DateTimeFormatter.ofPattern("yyyyMMdd");
     UriComponentsBuilder ub = UriComponentsBuilder
@@ -76,14 +76,14 @@ public class MarketIndexClient {
         .queryParam("numOfRows", numOfRows)
         .queryParam("beginBasDt", from.format(ymd))
         .queryParam("endBasDt", to.format(ymd));
-    if (idxNm != null && !idxNm.isBlank()) {
-      ub.queryParam("idxNm", idxNm); // 정확 일치
-    }
+
+    if (idxNm  != null && !idxNm.isBlank())  ub.queryParam("idxNm", idxNm);
+    if (idxCsf != null && !idxCsf.isBlank()) ub.queryParam("idxCsf", idxCsf); // ✅ 분류까지 전달
 
     String uri = ub.toUriString();
     String body = client.get().uri(uri).retrieve().body(String.class);
     log.info("[index-data] GET {}", uri);
-    log.debug("OpenAPI (index-data) body(masked): {}", mask(body));
+
     try {
       JsonNode root = om.readTree(body);
       String code = root.path("response").path("header").path("resultCode").asText("00");
@@ -98,11 +98,9 @@ public class MarketIndexClient {
 
       JsonNode itemNode = b.path("items").path("item");
       List<OpenApiIndexDataItem> items = new ArrayList<>();
-      if (itemNode.isArray()) {
-        for (JsonNode n : itemNode) items.add(convertData(n));
-      } else if (itemNode.isObject()) {
-        items.add(convertData(itemNode));
-      }
+      if (itemNode.isArray())      for (JsonNode n : itemNode) items.add(convertData(n));
+      else if (itemNode.isObject()) items.add(convertData(itemNode));
+
       return new IndexDataPageResult(items, total, page, size);
     } catch (Exception e) {
       throw new IllegalStateException("Failed to parse OpenAPI index-data response", e);
@@ -120,15 +118,11 @@ public class MarketIndexClient {
     );
   }
 
-  // convertData — basDt/가격 필드 alias 확실히 커버
-  // 2) convertData에서 idxNm 채우기
+  // basDt/가격 필드 alias 커버 + idxNm 포함 (fallback 필터용)
   private static OpenApiIndexDataItem convertData(JsonNode n) {
     LocalDate baseDate = parseDate(text(n, "basDt", "baseDate", "trdDd"));
-    if (baseDate == null) {
-      log.warn("[index-data] skip item: missing basDt. raw={}", n.toString());
-    }
     return new OpenApiIndexDataItem(
-        text(n, "idxNm"),                                         // ✅ 지수명
+        text(n, "idxNm"), // ✅ indexName 포함
         baseDate,
         decimal(n, "mkp", "marketPrice"),
         decimal(n, "clpr", "closingPrice"),
@@ -141,6 +135,7 @@ public class MarketIndexClient {
         along(n, "lstgMrktTotAmt", "mktTotAmt", "marketTotalAmount")
     );
   }
+
 
   // ===== 헬퍼들(각 1개씩만!) =====
   private static String text(JsonNode n, String... fields) {
@@ -200,8 +195,9 @@ public class MarketIndexClient {
   public record PageResult(
       List<OpenApiItem> items, int totalCount, int pageNo, int numOfRows) {}
 
+  // === 반환 타입 (indexName 추가!) ===
   public record OpenApiIndexDataItem(
-      String indexName,                 // ✅ 추가: OpenAPI의 idxNm
+      String indexName,
       LocalDate baseDate,
       java.math.BigDecimal marketPrice,
       java.math.BigDecimal closingPrice,
