@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class DashboardService {
 
+  private static final int CALCULATION_SCALE = 4;
+
   private final IndexInfoRepository indexInfoRepository;
 
   public List<IndexPerformanceDto> getFavoriteIndexPerformances(PeriodType periodType) {
@@ -32,7 +34,8 @@ public class DashboardService {
       case MONTHLY -> currentDate.minusMonths(1);
     };
 
-    List<IndexPerformanceRawDto> rawDataList = indexInfoRepository.findPerformanceRawData(currentDate, beforeDate);
+    List<IndexPerformanceRawDto> rawDataList = indexInfoRepository.findPerformanceRawData(
+        currentDate, beforeDate);
 
     return rawDataList.stream()
         .map(raw -> {
@@ -43,7 +46,7 @@ public class DashboardService {
           BigDecimal versus = currentPrice.subtract(beforePrice);
           BigDecimal fluctuationRate = BigDecimal.ZERO;
           if (beforePrice.compareTo(BigDecimal.ZERO) != 0) {
-            fluctuationRate = versus.divide(beforePrice, 4, RoundingMode.HALF_UP)
+            fluctuationRate = versus.divide(beforePrice, CALCULATION_SCALE, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100"));
           }
 

@@ -22,6 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ChartService {
 
+  private static final int MA_5_DAYS = 5;
+  private static final int MA_20_DAYS = 20;
+  private static final int CALCULATION_SCALE = 2;
+
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
 
@@ -49,12 +53,12 @@ public class ChartService {
       dataPoints.add(
           new ChartDataPointDto(currentData.getBaseDate(), currentData.getClosingPrice()));
 
-      if (i >= 4) {
-        BigDecimal ma5 = calculateMovingAverage(historicalData, i, 5);
+      if (i >= MA_5_DAYS - 1) {
+        BigDecimal ma5 = calculateMovingAverage(historicalData, i, MA_5_DAYS);
         ma5DataPoints.add(new ChartDataPointDto(currentData.getBaseDate(), ma5));
       }
-      if (i >= 19) {
-        BigDecimal ma20 = calculateMovingAverage(historicalData, i, 20);
+      if (i >= MA_20_DAYS - 1) {
+        BigDecimal ma20 = calculateMovingAverage(historicalData, i, MA_20_DAYS);
         ma20DataPoints.add(new ChartDataPointDto(currentData.getBaseDate(), ma20));
       }
     }
@@ -75,7 +79,7 @@ public class ChartService {
     for (int i = 0; i < days; i++) {
       sum = sum.add(data.get(currentIndex - i).getClosingPrice());
     }
-    return sum.divide(new BigDecimal(days), 2, RoundingMode.HALF_UP);
+    return sum.divide(new BigDecimal(days), CALCULATION_SCALE, RoundingMode.HALF_UP);
   }
 }
 
