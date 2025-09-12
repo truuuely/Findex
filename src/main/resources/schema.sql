@@ -57,3 +57,6 @@ CREATE TABLE IF NOT EXISTS auto_sync_config
 
 CREATE INDEX idx_index_info_index_classification ON index_info (index_classification);
 CREATE INDEX idx_index_info_index_name ON index_info (index_name);
+
+CREATE INDEX idx_index_data_info_date_id ON index_data (index_info_id, base_date, id);
+CREATE INDEX idx_index_data_info_closing_id ON index_data (index_info_id, closing_price, id);
