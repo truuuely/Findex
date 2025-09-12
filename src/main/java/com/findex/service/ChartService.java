@@ -7,17 +7,18 @@ import com.findex.entity.IndexInfo;
 import com.findex.enums.ChartPeriodType;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChartService {
 
   private final IndexInfoRepository indexInfoRepository;
@@ -44,7 +45,8 @@ public class ChartService {
     for (int i = 0; i < historicalData.size(); i++) {
       IndexData currentData = historicalData.get(i);
 
-      dataPoints.add(new ChartDataPointDto(currentData.getBaseDate(), currentData.getClosingPrice()));
+      dataPoints.add(
+          new ChartDataPointDto(currentData.getBaseDate(), currentData.getClosingPrice()));
 
       if (i >= 4) {
         BigDecimal ma5 = calculateMovingAverage(historicalData, i, 5);
