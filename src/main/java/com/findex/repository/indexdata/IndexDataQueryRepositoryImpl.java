@@ -39,7 +39,7 @@ public class IndexDataQueryRepositoryImpl implements IndexDataQueryRepository {
                 .limit(indexDataQuery.size() + 1)
                 .fetch();
 
-        Long totalCount = queryFactory.select(indexData.countDistinct())
+        Long totalCount = queryFactory.select(indexData.count())
                 .from(indexData)
                 .where(indexInfoIdEquals,
                         indexData.baseDate.goe(indexDataQuery.startDate()).and(indexData.baseDate.loe(indexDataQuery.endDate())))
