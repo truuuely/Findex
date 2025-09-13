@@ -5,6 +5,7 @@ import com.findex.dto.syncjob.IndexDataOpenApiResult;
 import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
 import com.findex.service.IndexDataSyncService;
 import com.findex.service.IndexInfoSyncService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +29,38 @@ public class SyncjobsInfoController {
   public List<IndexInfoDto> syncAll() {
     return syncInfoService.SyncResponse();  // ← List 반환
   }
-  // (신규) 지수데이터 동기화 + 출력
+
+
   @PostMapping("/index-data")
   @ResponseStatus(HttpStatus.OK)
-  public List<IndexDataOpenApiResult> syncIndexData(@RequestBody @Valid IndexDataOpenApiSyncRequest req) {
-    return syncDataService.syncFromOpenApi(req);
+  public List<IndexDataOpenApiResult> syncIndexData(
+      @RequestBody @Valid IndexDataOpenApiSyncRequest req,
+      HttpServletRequest httpRequest
+  ) {
+    String worker = resolveClientIp(httpRequest);
+    return syncDataService.syncFromOpenApi(req, worker); // IP 넘김
+  }
+
+  private String resolveClientIp(HttpServletRequest request) {
+    String ip = null;
+
+    // 프록시 헤더 우선
+    String xff = request.getHeader("X-Forwarded-For");
+    if (xff != null && !xff.isBlank()) {
+      ip = xff.split(",")[0].trim(); // 첫 IP
+    } else {
+      String xrip = request.getHeader("X-Real-IP");
+      if (xrip != null && !xrip.isBlank()) ip = xrip.trim();
+    }
+
+    // 없으면 RemoteAddr
+    if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
+
+    // 정규화
+    if ("0:0:0:0:0:0:0:1".equals(ip) || "::1".equals(ip)) return "127.0.0.1";
+    if (ip.startsWith("::ffff:")) ip = ip.substring(7);      // IPv4-mapped
+    int pct = ip.indexOf('%'); if (pct > 0) ip = ip.substring(0, pct); // zoneId
+
+    return ip;
   }
 }

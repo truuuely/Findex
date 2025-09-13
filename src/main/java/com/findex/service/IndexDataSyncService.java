@@ -9,6 +9,7 @@ import com.findex.enums.IndexSourceType;
 import com.findex.openapi.MarketIndexClient;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
+import com.findex.repository.syncJob.SyncJobRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,22 +29,50 @@ public class IndexDataSyncService {
   private final MarketIndexClient client;
   private final IndexInfoRepository infoRepo;
   private final IndexDataRepository dataRepo;
+  private final SyncJobRepository jobRepo;
 
   @Transactional
-  public List<IndexDataOpenApiResult> syncFromOpenApi(IndexDataOpenApiSyncRequest req) {
-    LocalDate from = req.baseDateFrom();
-    LocalDate to   = req.baseDateTo();
-    if (from.isAfter(to)) { LocalDate t = from; from = to; to = t; }
+  public List<IndexDataOpenApiResult> syncFromOpenApi(IndexDataOpenApiSyncRequest req, String worker) {
+    // 날짜 정규화
+    java.time.LocalDate from = req.baseDateFrom();
+    java.time.LocalDate to   = req.baseDateTo();
+    if (from.isAfter(to)) { java.time.LocalDate t = from; from = to; to = t; }
 
+    // id 목록 순회
     var ids = new java.util.LinkedHashSet<>(req.indexInfoIds());
-    var results = new ArrayList<IndexDataOpenApiResult>();
-    for (Long id : ids) {
-      results.add(syncOneIndex(id, from, to));
+    var results = new java.util.ArrayList<IndexDataOpenApiResult>();
+
+    for (Long indexInfoId : ids) {
+      boolean ok = false;
+      try {
+        var one = syncOneIndex(indexInfoId, from, to);
+        results.add(one);
+        ok = true;
+      } catch (Exception e) {
+        // 실패한 요청 기록남김
+        log.error("[index-data] indexInfoId={} sync failed: {}", indexInfoId, e.toString());
+        // 필요 시 rethrow
+      } finally {
+        // 대상날짜
+        saveJob(indexInfoId, to, worker, ok);
+      }
     }
     return results;
   }
 
-  // 단일 인덱스 처리 (기존 로직 그대로 이동)
+  // 기록 저장
+  private void saveJob(Long indexInfoId, java.time.LocalDate targetDate, String worker, boolean ok) {
+    var job = new com.findex.entity.SyncJob(
+        indexInfoId,
+        com.findex.enums.SyncJobType.INDEX_DATA,
+        targetDate,
+        worker,
+        ok ? com.findex.enums.SyncJobResult.SUCCESS : com.findex.enums.SyncJobResult.FAILED
+    );
+    jobRepo.save(job);
+  }
+
+  // 단일 인덱스 처리
   private IndexDataOpenApiResult syncOneIndex(Long indexInfoId, LocalDate from, LocalDate to) {
     IndexInfo info = infoRepo.getOrThrow(indexInfoId);
 
@@ -81,7 +110,7 @@ public class IndexDataSyncService {
     }
     log.info("[index-data] indexInfoIds={} upsert saved={}", indexInfoId, saved);
 
-    // 조회/반환 (단일 id 결과 한 건)
+    // 조회/반환
     var list = fetchByIndexId(indexInfoId, from, to);
     if (!list.isEmpty()) return list.get(0);
 
