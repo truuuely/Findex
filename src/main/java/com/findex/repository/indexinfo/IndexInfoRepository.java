@@ -11,33 +11,49 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>, IndexInfoQueryRepository {
+public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>,
+    IndexInfoQueryRepository {
 
-  Optional<IndexInfo> findByIndexClassificationAndIndexName(String indexClassification, String indexName);
+  Optional<IndexInfo> findByIndexClassificationAndIndexName(String indexClassification,
+      String indexName);
 
   @Query("""
-              SELECT new com.findex.dto.indexinfo.IndexInfoSummaryDto(
-                  i.id, i.indexClassification, i.indexName
-              )
-              FROM IndexInfo i
-          """)
-      List<IndexInfoSummaryDto> findAllSummaries();
+          SELECT new com.findex.dto.indexinfo.IndexInfoSummaryDto(
+              i.id, i.indexClassification, i.indexName
+          )
+          FROM IndexInfo i
+      """)
+  List<IndexInfoSummaryDto> findAllSummaries();
 
-    @Query("""
-              SELECT new com.findex.dto.dashboard.IndexPerformanceRawDto(
-                  i,
-                  (SELECT p1.closingPrice FROM IndexData p1 WHERE p1.indexInfoId = i.id AND p1.baseDate <= :currentDate ORDER BY p1.baseDate DESC LIMIT 1),
-                  (SELECT p2.closingPrice FROM IndexData p2 WHERE p2.indexInfoId = i.id AND p2.baseDate <= :beforeDate ORDER BY p2.baseDate DESC LIMIT 1)
-              )
-              FROM IndexInfo i
-              WHERE i.favorite = true
-          """)
-    List<IndexPerformanceRawDto> findPerformanceRawData(@Param("currentDate") LocalDate currentDate, @Param("beforeDate") LocalDate beforeDate);
+  @Query("""
+          SELECT new com.findex.dto.dashboard.IndexPerformanceRawDto(
+              i,
+              (SELECT p1.closingPrice FROM IndexData p1 WHERE p1.indexInfoId = i.id AND p1.baseDate <= :currentDate ORDER BY p1.baseDate DESC LIMIT 1),
+              (SELECT p2.closingPrice FROM IndexData p2 WHERE p2.indexInfoId = i.id AND p2.baseDate <= :beforeDate ORDER BY p2.baseDate DESC LIMIT 1)
+          )
+          FROM IndexInfo i
+          WHERE i.favorite = true
+      """)
+  List<IndexPerformanceRawDto> findPerformanceRawData(
+      @Param("currentDate") LocalDate currentDate,
+      @Param("beforeDate") LocalDate beforeDate);
 
-    default IndexInfo getOrThrow(Long id) {
-        return findById(id).orElseThrow(() ->
-            new NotFoundException(
-                "IndexInfo with id %s not found".formatted(id))
-        );
-    }
+  default IndexInfo getOrThrow(Long id) {
+    return findById(id).orElseThrow(() ->
+        new NotFoundException(
+            "IndexInfo with id %s not found".formatted(id))
+    );
+  }
+
+  @Query("""
+          SELECT new com.findex.dto.dashboard.IndexPerformanceRawDto(
+              i,
+              (SELECT p1.closingPrice FROM IndexData p1 WHERE p1.indexInfoId = i.id AND p1.baseDate <= :currentDate ORDER BY p1.baseDate DESC LIMIT 1),
+              (SELECT p2.closingPrice FROM IndexData p2 WHERE p2.indexInfoId = i.id AND p2.baseDate <= :beforeDate ORDER BY p2.baseDate DESC LIMIT 1)
+          )
+          FROM IndexInfo i
+      """)
+  List<IndexPerformanceRawDto> findAllPerformanceRawData(
+      @Param("currentDate") LocalDate currentDate,
+      @Param("beforeDate") LocalDate beforeDate);
 }
