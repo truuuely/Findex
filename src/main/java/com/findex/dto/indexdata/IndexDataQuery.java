@@ -1,6 +1,5 @@
 package com.findex.dto.indexdata;
 
-import static org.springframework.util.StringUtils.hasText;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.findex.enums.IndexDataSortField;
@@ -27,6 +26,7 @@ public record IndexDataQuery(
 ) {
     public static final LocalDate START_DATE_DEFAULT_VALUE = LocalDate.of(1900, 1, 1);
     public static final String SORT_DIRECTION_DEFAULT_VALUE = "desc";
+    public static final String SORT_FIELD_DEFAULT_VALUE = "baseDate";
     public static final int SIZE_DEFAULT_VALUE = 10;
 
     public IndexDataQuery {
@@ -36,7 +36,10 @@ public record IndexDataQuery(
         if (endDate == null) {
             endDate = LocalDate.now();
         }
-        if (!hasText(sortDirection)) {
+        if (sortField == null) {
+            sortField = SORT_FIELD_DEFAULT_VALUE;
+        }
+        if (sortDirection == null) {
             sortDirection = SORT_DIRECTION_DEFAULT_VALUE;
         }
         if (size == null) {
