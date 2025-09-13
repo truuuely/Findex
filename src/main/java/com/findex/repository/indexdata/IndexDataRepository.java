@@ -16,7 +16,7 @@ import java.util.List;
 
 public interface IndexDataRepository extends JpaRepository<IndexData, Long>, IndexDataQueryRepository {
   @Query("SELECT d.closingPrice FROM IndexData d, IndexInfo i WHERE d.indexInfoId = i.id AND i.id = :indexInfoId AND d.baseDate <= :baseDate ORDER BY d.baseDate DESC")
-  List<BigDecimal> findClosingPrice(@Param("indexInfoId") Long indexInfoId,
+  List<BigDecimal> findClosingPrice(@Param("indexInfoIds") Long indexInfoId,
       @Param("baseDate") LocalDate baseDate, Pageable pageable);
 
   Optional<IndexData> findByIndexInfoIdAndBaseDate(Long indexInfoId, LocalDate baseDate);
@@ -27,23 +27,25 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>, Ind
   }
 
   @Query("SELECT d FROM IndexData d WHERE d.indexInfoId = :indexInfoId AND d.baseDate > :startDate ORDER BY d.baseDate ASC")
-  List<IndexData> findChartData(@Param("indexInfoId") Long indexInfoId, @Param("startDate") LocalDate startDate);
+  List<IndexData> findChartData(@Param("indexInfoIds") Long indexInfoId, @Param("startDate") LocalDate startDate);
 
   @Query("""
 SELECT new com.findex.dto.syncjob.IndexDataJoinedRow(
   i.id, i.indexClassification, i.indexName,
-    d.id, d.baseDate, d.sourceType,
-    d.marketPrice, d.closingPrice, d.highPrice, d.lowPrice,
-    d.versus, d.fluctuationRate,
-    d.tradingQuantity, d.tradingPrice, d.marketTotalAmount
-  )
-  FROM IndexData d, IndexInfo i
-  WHERE i.id = d.indexInfoId
-    AND i.id = :indexInfoId
-    AND d.baseDate BETWEEN :from AND :to
-  ORDER BY d.baseDate DESC
-""")
-  List<IndexDataJoinedRow> findJoinedSortedByIndexId(@Param("indexInfoId") Long indexInfoId,
-      @Param("from") LocalDate from,
-      @Param("to") LocalDate to);
+      d.id, d.baseDate, d.sourceType,
+      d.marketPrice, d.closingPrice, d.highPrice, d.lowPrice,
+      d.versus, d.fluctuationRate,
+      d.tradingQuantity, d.tradingPrice, d.marketTotalAmount
+    )
+    FROM IndexData d, IndexInfo i
+    WHERE i.id = d.indexInfoId
+      AND i.id = :indexInfoId
+      AND d.baseDate BETWEEN :from AND :to
+    ORDER BY d.baseDate DESC
+  """)
+  List<IndexDataJoinedRow> findJoinedSortedByIndexId(
+      @org.springframework.data.repository.query.Param("indexInfoId") Long indexInfoId,
+      @org.springframework.data.repository.query.Param("from")        java.time.LocalDate from,
+      @org.springframework.data.repository.query.Param("to")          java.time.LocalDate to
+  );
 }

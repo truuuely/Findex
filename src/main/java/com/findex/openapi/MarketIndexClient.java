@@ -56,7 +56,7 @@ public class MarketIndexClient {
       }
       return new PageResult(items, total, page, size);
     } catch (Exception e) {
-      throw new IllegalStateException("Failed to parse OpenAPI response", e);
+      throw new IllegalStateException("Failed baseDateTo parse OpenAPI response", e);
     }
   }
 
@@ -100,7 +100,7 @@ public class MarketIndexClient {
 
       return new IndexDataPageResult(items, total, page, size);
     } catch (Exception e) {
-      throw new IllegalStateException("Failed to parse OpenAPI index-data response", e);
+      throw new IllegalStateException("Failed baseDateTo parse OpenAPI index-data response", e);
     }
   }
 

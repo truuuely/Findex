@@ -31,46 +31,65 @@ public class IndexDataSyncService {
 
   @Transactional
   public List<IndexDataOpenApiResult> syncFromOpenApi(IndexDataOpenApiSyncRequest req) {
-    // id로 대상 찾기
-    IndexInfo info = infoRepo.getOrThrow(req.indexInfoId());
+    LocalDate from = req.baseDateFrom();
+    LocalDate to   = req.baseDateTo();
+    if (from.isAfter(to)) { LocalDate t = from; from = to; to = t; }
 
-    final int PAGE_SIZE = 500; // API 제한 고려
+    var ids = new java.util.LinkedHashSet<>(req.indexInfoIds());
+    var results = new ArrayList<IndexDataOpenApiResult>();
+    for (Long id : ids) {
+      results.add(syncOneIndex(id, from, to));
+    }
+    return results;
+  }
+
+  // 단일 인덱스 처리 (기존 로직 그대로 이동)
+  private IndexDataOpenApiResult syncOneIndex(Long indexInfoId, LocalDate from, LocalDate to) {
+    IndexInfo info = infoRepo.getOrThrow(indexInfoId);
+
+    final int PAGE_SIZE = 500;
     List<MarketIndexClient.OpenApiIndexDataItem> items;
 
-    //idxNm + idxCsf 로 페이징 수집
-    items = fetchAllPages(info.getIndexName(), info.getIndexClassification(), req.from(), req.to(), PAGE_SIZE);
+    // idxNm + idxCsf
+    items = fetchAllPages(info.getIndexName(), info.getIndexClassification(), from, to, PAGE_SIZE);
 
-    //idxNm만
+    // idxNm만
     if (items.isEmpty()) {
-      items = fetchAllPages(info.getIndexName(), null, req.from(), req.to(), PAGE_SIZE);
-      log.warn("[index-data] fallback#1 only idxNm. collected={}", items.size());
+      items = fetchAllPages(info.getIndexName(), null, from, to, PAGE_SIZE);
+      log.warn("[index-data] fallback#1 only idxNm. indexInfoIds={}, collected={}", indexInfoId, items.size());
     }
 
-    //전체 호출 후 로컬에서 이름 일치 필터
+    // 전체 받아 로컬 필터
     if (items.isEmpty()) {
-      List<MarketIndexClient.OpenApiIndexDataItem> all =
-          fetchAllPages(null, null, req.from(), req.to(), PAGE_SIZE);
+      List<MarketIndexClient.OpenApiIndexDataItem> all = fetchAllPages(null, null, from, to, PAGE_SIZE);
       String want = norm(info.getIndexName());
       items = all.stream().filter(it -> want.equals(norm(it.indexName()))).toList();
-      log.warn("[index-data] fallback#2 local filter by idxNm. collected={}", items.size());
+      log.warn("[index-data] fallback#2 local filter. indexInfoIds={}, collected={}", indexInfoId, items.size());
     }
 
-    //업서트 저장 (baseDate 필수, null 필드는 update*가 무시)
+    // 업서트
     int saved = 0;
     for (var it : items) {
       if (it.baseDate() == null) continue;
-      IndexData e = dataRepo.findByIndexInfoIdAndBaseDate(info.getId(), it.baseDate())
-          .orElseGet(() -> new IndexData(info.getId(), it.baseDate(), IndexSourceType.OPEN_API));
+      IndexData e = dataRepo.findByIndexInfoIdAndBaseDate(indexInfoId, it.baseDate())
+          .orElseGet(() -> new IndexData(indexInfoId, it.baseDate(), IndexSourceType.OPEN_API));
       e.updatePrices(it.marketPrice(), it.closingPrice(), it.highPrice(), it.lowPrice());
       e.updateFluctuation(it.versus(), it.fluctuationRate());
       e.updateTrading(it.tradingQuantity(), it.tradingPrice(), it.marketTotalAmount());
       dataRepo.save(e);
       saved++;
     }
-    log.info("[index-data] indexInfoId={} upsert saved={}", info.getId(), saved);
+    log.info("[index-data] indexInfoIds={} upsert saved={}", indexInfoId, saved);
 
-    //id + 기간으로만 조회해 반환 (날짜 내림차순)
-    return fetchByIndexId(req.indexInfoId(), req.from(), req.to());
+    // 조회/반환 (단일 id 결과 한 건)
+    var list = fetchByIndexId(indexInfoId, from, to);
+    if (!list.isEmpty()) return list.get(0);
+
+    // 저장 0건이어도 응답 스키마 유지
+    return new IndexDataOpenApiResult(
+        info.getIndexName(),
+        java.util.List.of(new IndexDataOpenApiResult.Group(indexInfoId, info.getIndexClassification(), java.util.List.of()))
+    );
   }
 
   @Transactional(readOnly = true)
@@ -96,7 +115,7 @@ public class IndexDataSyncService {
     return List.of(new IndexDataOpenApiResult(info.getIndexName(), groups));
   }
 
-  // OpenAPI 페이징 수집: totalCount/numOfRows 기준으로 끝까지 호출
+  // 페이징 수집
   private List<MarketIndexClient.OpenApiIndexDataItem> fetchAllPages(
       String idxNm, String idxCsf, LocalDate from, LocalDate to, int pageSize
   ) {

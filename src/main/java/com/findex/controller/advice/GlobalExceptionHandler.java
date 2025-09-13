@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
         HttpServletRequest req
     ) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        String message = "Unable to read request body, please check JSON format and field type";
+        String message = "Unable baseDateTo read request body, please check JSON format and field type";
         String causeMsg = Optional.of(e.getMostSpecificCause())
             .map(Throwable::getMessage)
             .orElse(e.getMessage());
