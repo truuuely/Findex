@@ -5,6 +5,7 @@ import com.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.findex.entity.IndexInfo;
 import com.findex.exception.NotFoundException;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -52,4 +53,6 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>, Ind
                 "IndexInfo with id %s not found".formatted(id))
         );
     }
+
+    IndexInfo findByIdIn(Collection<Long> ids);
 }
