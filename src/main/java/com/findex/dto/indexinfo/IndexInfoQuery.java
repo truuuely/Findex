@@ -17,7 +17,7 @@ public record IndexInfoQuery(
     IndexSortField sortFieldEnum,
 
     @JsonIgnore
-    boolean asc
+    Boolean asc
 ) {
     public static final String DEFAULT_SORT_FIELD = "indexClassification";
     public static final String DEFAULT_SORT_DIRECTION = "asc";
