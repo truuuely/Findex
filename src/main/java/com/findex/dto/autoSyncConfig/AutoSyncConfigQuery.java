@@ -1,13 +1,13 @@
 package com.findex.dto.autoSyncConfig;
 
 public record AutoSyncConfigQuery(
-        Long indexInfoId,
-        Boolean enabled,
-        Long idAfter,
-        String cursor,
-        String sortField,
-        String sortDirection,
-        Integer size
+    Long indexInfoId,
+    Boolean enabled,
+    Long idAfter,
+    String cursor,
+    String sortField,
+    String sortDirection,
+    Integer size
 ) {
     public static final String SORT_FIELD = "indexInfo.indexName";
     public static final String SORT_DIRECTION = "asc";
@@ -25,7 +25,7 @@ public record AutoSyncConfigQuery(
         }
     }
 
-    public boolean direction(String sortDirection) {
+    public boolean asc(String sortDirection) {
         return sortDirection.equals(SORT_DIRECTION);
     }
 }

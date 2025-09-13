@@ -1,5 +1,8 @@
 package com.findex.repository.autoSyncRepository;
 
+import static com.findex.enums.AutoSyncConfigSortField.parse;
+import static org.springframework.util.StringUtils.hasText;
+
 import com.findex.dto.autoSyncConfig.AutoSyncConfigDto;
 import com.findex.dto.autoSyncConfig.AutoSyncConfigQuery;
 import com.findex.dto.response.CursorPageResponse;
@@ -11,14 +14,10 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.findex.enums.AutoSyncConfigSortField.parse;
-import static org.springframework.util.StringUtils.hasText;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,9 +38,9 @@ public class AutoSyncConfigQueryRepositoryImpl implements AutoSyncConfigQueryRep
                 .where(
                         configQuery.indexInfoId() != null ? QAutoSyncConfig.autoSyncConfig.indexInfo.id.eq(configQuery.indexInfoId()) : null,
                         configQuery.enabled() != null ? QAutoSyncConfig.autoSyncConfig.enabled.eq(configQuery.enabled()) : null,
-                        buildRangeFromCursor(parse(configQuery.sortField()), configQuery.direction(configQuery.sortDirection()), configQuery.idAfter(), configQuery.cursor())
+                        buildRangeFromCursor(parse(configQuery.sortField()), configQuery.asc(configQuery.sortDirection()), configQuery.idAfter(), configQuery.cursor())
                 )
-                .orderBy(buildOrderSpecifiers(parse(configQuery.sortField()), configQuery.direction(configQuery.sortDirection())).toArray(OrderSpecifier[]::new))
+                .orderBy(buildOrderSpecifiers(parse(configQuery.sortField()), configQuery.asc(configQuery.sortDirection())).toArray(OrderSpecifier[]::new))
                 .limit(configQuery.size() + 1)
                 .fetch();
 
