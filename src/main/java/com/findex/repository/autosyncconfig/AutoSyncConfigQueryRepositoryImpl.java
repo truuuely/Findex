@@ -27,22 +27,22 @@ public class AutoSyncConfigQueryRepositoryImpl implements AutoSyncConfigQueryRep
     @Override
     public CursorPageResponse findAll(AutoSyncConfigQuery configQuery) {
         List<AutoSyncConfigDto> rows = queryFactory
-                .select(Projections.constructor(AutoSyncConfigDto.class,
-                        QAutoSyncConfig.autoSyncConfig.id,
-                        QAutoSyncConfig.autoSyncConfig.indexInfo.id,
-                        QAutoSyncConfig.autoSyncConfig.indexInfo.indexClassification,
-                        QAutoSyncConfig.autoSyncConfig.indexInfo.indexName,
-                        QAutoSyncConfig.autoSyncConfig.enabled
-                ))
-                .from(QAutoSyncConfig.autoSyncConfig)
-                .where(
-                        configQuery.indexInfoId() != null ? QAutoSyncConfig.autoSyncConfig.indexInfo.id.eq(configQuery.indexInfoId()) : null,
-                        configQuery.enabled() != null ? QAutoSyncConfig.autoSyncConfig.enabled.eq(configQuery.enabled()) : null,
-                        buildRangeFromCursor(parse(configQuery.sortField()), configQuery.asc(configQuery.sortDirection()), configQuery.idAfter(), configQuery.cursor())
-                )
-                .orderBy(buildOrderSpecifiers(parse(configQuery.sortField()), configQuery.asc(configQuery.sortDirection())).toArray(OrderSpecifier[]::new))
-                .limit(configQuery.size() + 1)
-                .fetch();
+            .select(Projections.constructor(AutoSyncConfigDto.class,
+                QAutoSyncConfig.autoSyncConfig.id,
+                QAutoSyncConfig.autoSyncConfig.indexInfo.id,
+                QAutoSyncConfig.autoSyncConfig.indexInfo.indexClassification,
+                QAutoSyncConfig.autoSyncConfig.indexInfo.indexName,
+                QAutoSyncConfig.autoSyncConfig.enabled
+            ))
+            .from(QAutoSyncConfig.autoSyncConfig)
+            .where(
+                configQuery.indexInfoId() != null ? QAutoSyncConfig.autoSyncConfig.indexInfo.id.eq(configQuery.indexInfoId()) : null,
+                configQuery.enabled() != null ? QAutoSyncConfig.autoSyncConfig.enabled.eq(configQuery.enabled()) : null,
+                buildRangeFromCursor(parse(configQuery.sortField()), configQuery.asc(configQuery.sortDirection()), configQuery.idAfter(), configQuery.cursor())
+            )
+            .orderBy(buildOrderSpecifiers(parse(configQuery.sortField()), configQuery.asc(configQuery.sortDirection())).toArray(OrderSpecifier[]::new))
+            .limit(configQuery.size() + 1)
+            .fetch();
 
         Long totalElements = queryFactory
                 .select(QAutoSyncConfig.autoSyncConfig.count())
