@@ -1,10 +1,10 @@
-package com.findex.repository.autoSyncRepository;
+package com.findex.repository.autosyncconfig;
 
 import static com.findex.enums.AutoSyncConfigSortField.parse;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.findex.dto.autoSyncConfig.AutoSyncConfigDto;
-import com.findex.dto.autoSyncConfig.AutoSyncConfigQuery;
+import com.findex.dto.autosyncconfig.AutoSyncConfigDto;
+import com.findex.dto.autosyncconfig.AutoSyncConfigQuery;
 import com.findex.dto.response.CursorPageResponse;
 import com.findex.entity.QAutoSyncConfig;
 import com.findex.enums.AutoSyncConfigSortField;

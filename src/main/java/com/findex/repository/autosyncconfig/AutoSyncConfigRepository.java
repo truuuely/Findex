@@ -1,4 +1,4 @@
-package com.findex.repository.autoSyncRepository;
+package com.findex.repository.autosyncconfig;
 
 import com.findex.entity.AutoSyncConfig;
 import org.springframework.data.jpa.repository.JpaRepository;

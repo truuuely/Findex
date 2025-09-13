@@ -1,4 +1,4 @@
-package com.findex.dto.autoSyncConfig;
+package com.findex.dto.autosyncconfig;
 
 public record AutoSyncConfigDto(
     Long id,
