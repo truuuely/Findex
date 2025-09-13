@@ -1,5 +1,7 @@
 package com.findex.repository.indexdata;
 
+import static com.findex.entity.QIndexData.indexData;
+
 import com.findex.dto.indexdata.IndexDataQuery;
 import com.findex.dto.response.CursorPageResponse;
 import com.findex.entity.IndexData;
@@ -9,15 +11,12 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static com.findex.entity.QIndexData.indexData;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,7 +25,7 @@ public class IndexDataQueryRepositoryImpl implements IndexDataQueryRepository {
 
     @Override
     public CursorPageResponse findAll(IndexDataQuery indexDataQuery) {
-        IndexDataSortField sortField = indexDataQuery.getSortFieldEnum();
+        IndexDataSortField sortField = indexDataQuery.sortFieldEnum();
         String sortDirection = indexDataQuery.sortDirection().toUpperCase();
 
         BooleanExpression indexInfoIdEquals = indexDataQuery.indexInfoId() != null ? indexData.indexInfoId.eq(indexDataQuery.indexInfoId()) : null;
@@ -66,7 +65,7 @@ public class IndexDataQueryRepositoryImpl implements IndexDataQueryRepository {
 
     @Override
     public Stream<IndexData> findAllForExport(IndexDataQuery indexDataQuery) {
-        IndexDataSortField sortField = indexDataQuery.getSortFieldEnum();
+        IndexDataSortField sortField = indexDataQuery.sortFieldEnum();
         String sortDirection = indexDataQuery.sortDirection().toUpperCase();
 
         BooleanExpression indexInfoIdEquals = indexDataQuery.indexInfoId() != null ? indexData.indexInfoId.eq(indexDataQuery.indexInfoId()) : null;
