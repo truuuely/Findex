@@ -7,7 +7,7 @@ public record IndexDataOpenApiResult(
     String indexName,
     List<Group> groups
 ) {
-  public static record Group(
+  public record Group(
       Long indexInfoId,
       String indexClassification,
       List<IndexDataDto> rows
