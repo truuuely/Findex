@@ -25,7 +25,7 @@ public class IndexInfoQueryRepositoryImpl implements IndexInfoQueryRepository{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public CursorPageResponse findAll(IndexInfoQuery q) {
+    public CursorPageResponse findAll(IndexInfoQuery query) {
         List<IndexInfoDto> rows = queryFactory
             .select(Projections.constructor(IndexInfoDto.class,
                 indexInfo.id,
@@ -39,43 +39,43 @@ public class IndexInfoQueryRepositoryImpl implements IndexInfoQueryRepository{
             ))
             .from(indexInfo)
             .where(
-                hasText(q.indexClassification()) ? indexInfo.indexClassification.contains(q.indexClassification()) : null,
-                hasText(q.indexName()) ? indexInfo.indexName.contains(q.indexName()) : null,
-                q.favorite() != null ? indexInfo.favorite.eq(q.favorite()) : null,
-                buildRangeFromCursor(q.sortFieldEnum(), q.asc(), q.idAfter(), q.cursor())
+                hasText(query.indexClassification()) ? indexInfo.indexClassification.contains(query.indexClassification()) : null,
+                hasText(query.indexName()) ? indexInfo.indexName.contains(query.indexName()) : null,
+                query.favorite() != null ? indexInfo.favorite.eq(query.favorite()) : null,
+                buildRangeFromCursor(query.sortFieldEnum(), query.asc(), query.idAfter(), query.cursor())
             )
-            .orderBy(buildOrderSpecifiers(q.sortFieldEnum(), q.asc()))
-            .limit(q.size() + 1)
+            .orderBy(buildOrderSpecifiers(query.sortFieldEnum(), query.asc()))
+            .limit(query.size() + 1)
             .fetch();
 
         Long total = queryFactory
             .select(indexInfo.count())
             .from(indexInfo)
             .where(
-                hasText(q.indexClassification()) ? indexInfo.indexClassification.contains(q.indexClassification()) : null,
-                hasText(q.indexName()) ? indexInfo.indexName.contains(q.indexName()) : null,
-                q.favorite() != null ? indexInfo.favorite.eq(q.favorite()) : null
+                hasText(query.indexClassification()) ? indexInfo.indexClassification.contains(query.indexClassification()) : null,
+                hasText(query.indexName()) ? indexInfo.indexName.contains(query.indexName()) : null,
+                query.favorite() != null ? indexInfo.favorite.eq(query.favorite()) : null
             )
             .fetchOne();
 
         long totalElements = (total != null) ? total : 0;
 
-        if (rows.size() <= q.size()) {
-            return new CursorPageResponse(rows, null, null, q.size(), totalElements, false);
+        if (rows.size() <= query.size()) {
+            return new CursorPageResponse(rows, null, null, query.size(), totalElements, false);
         }
 
-        rows = rows.subList(0, q.size());
+        rows = rows.subList(0, query.size());
         IndexInfoDto last = rows.get(rows.size() - 1);
 
         return new CursorPageResponse(
             rows,
-            switch (q.sortFieldEnum()) {
+            switch (query.sortFieldEnum()) {
                 case INDEX_NAME -> last.indexName();
                 case EMPLOYED_ITEMS_COUNT -> String.valueOf(last.employedItemsCount());
                 default -> last.indexClassification();
             },
             last.id(),
-            q.size(),
+            query.size(),
             totalElements,
             true
         );

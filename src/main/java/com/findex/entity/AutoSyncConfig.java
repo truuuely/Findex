@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.NoSuchElementException;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -24,7 +22,7 @@ public class AutoSyncConfig extends BaseEntity {
 
     public void updateEnabled(Boolean enabled) {
         if (enabled == null) {
-            throw new NoSuchElementException("enabled is null");
+            throw new IllegalArgumentException("enabled is null");
         }
         this.enabled = enabled;
     }

@@ -1,8 +1,8 @@
 package com.findex.controller;
 
-import com.findex.dto.autoSyncConfig.AutoSyncConfigDto;
-import com.findex.dto.autoSyncConfig.AutoSyncConfigQuery;
-import com.findex.dto.autoSyncConfig.AutoSyncConfigUpdateRequest;
+import com.findex.dto.autosyncconfig.AutoSyncConfigDto;
+import com.findex.dto.autosyncconfig.AutoSyncConfigQuery;
+import com.findex.dto.autosyncconfig.AutoSyncConfigUpdateRequest;
 import com.findex.dto.response.CursorPageResponse;
 import com.findex.service.AutoSyncConfigService;
 import jakarta.validation.Valid;

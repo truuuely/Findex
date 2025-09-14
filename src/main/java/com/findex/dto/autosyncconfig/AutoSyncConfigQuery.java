@@ -1,13 +1,22 @@
-package com.findex.dto.autoSyncConfig;
+package com.findex.dto.autosyncconfig;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.findex.enums.AutoSyncConfigSortField;
 
 public record AutoSyncConfigQuery(
-        Long indexInfoId,
-        Boolean enabled,
-        Long idAfter,
-        String cursor,
-        String sortField,
-        String sortDirection,
-        Integer size
+    Long indexInfoId,
+    Boolean enabled,
+    Long idAfter,
+    String cursor,
+    String sortField,
+    String sortDirection,
+    Integer size,
+
+    @JsonIgnore
+    AutoSyncConfigSortField sortFieldEnum,
+
+    @JsonIgnore
+    Boolean asc
 ) {
     public static final String SORT_FIELD = "indexInfo.indexName";
     public static final String SORT_DIRECTION = "asc";
@@ -23,9 +32,7 @@ public record AutoSyncConfigQuery(
         if (size == null || size <= 0) {
             size = SIZE_FIELD;
         }
-    }
-
-    public boolean direction(String sortDirection) {
-        return sortDirection.equals(SORT_DIRECTION);
+        sortFieldEnum = AutoSyncConfigSortField.from(sortField);
+        asc = "asc".equalsIgnoreCase(sortDirection);
     }
 }

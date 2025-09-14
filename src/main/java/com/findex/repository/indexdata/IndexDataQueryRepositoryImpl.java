@@ -1,5 +1,7 @@
 package com.findex.repository.indexdata;
 
+import static com.findex.entity.QIndexData.indexData;
+
 import com.findex.dto.indexdata.IndexDataQuery;
 import com.findex.dto.response.CursorPageResponse;
 import com.findex.entity.IndexData;
@@ -9,15 +11,12 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static com.findex.entity.QIndexData.indexData;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,16 +25,15 @@ public class IndexDataQueryRepositoryImpl implements IndexDataQueryRepository {
 
     @Override
     public CursorPageResponse findAll(IndexDataQuery indexDataQuery) {
-        IndexDataSortField sortField = indexDataQuery.getSortFieldEnum();
-        String sortDirection = indexDataQuery.sortDirection().toUpperCase();
+        IndexDataSortField sortField = indexDataQuery.sortFieldEnum();
 
         BooleanExpression indexInfoIdEquals = indexDataQuery.indexInfoId() != null ? indexData.indexInfoId.eq(indexDataQuery.indexInfoId()) : null;
 
         List<IndexData> results = queryFactory.selectFrom(indexData)
                 .where(indexInfoIdEquals,
                         indexData.baseDate.goe(indexDataQuery.startDate()).and(indexData.baseDate.loe(indexDataQuery.endDate())),
-                        buildCursorPredicate(sortField, Order.ASC.toString().equals(sortDirection), indexDataQuery.cursor(), indexDataQuery.idAfter()))
-                .orderBy(createOrderSpecifiers(sortField, sortDirection))
+                        buildCursorPredicate(sortField, indexDataQuery.asc(), indexDataQuery.cursor(), indexDataQuery.idAfter()))
+                .orderBy(createOrderSpecifiers(sortField, indexDataQuery.asc()))
                 .limit(indexDataQuery.size() + 1)
                 .fetch();
 
@@ -66,20 +64,19 @@ public class IndexDataQueryRepositoryImpl implements IndexDataQueryRepository {
 
     @Override
     public Stream<IndexData> findAllForExport(IndexDataQuery indexDataQuery) {
-        IndexDataSortField sortField = indexDataQuery.getSortFieldEnum();
-        String sortDirection = indexDataQuery.sortDirection().toUpperCase();
+        IndexDataSortField sortField = indexDataQuery.sortFieldEnum();
 
         BooleanExpression indexInfoIdEquals = indexDataQuery.indexInfoId() != null ? indexData.indexInfoId.eq(indexDataQuery.indexInfoId()) : null;
 
         return queryFactory.selectFrom(indexData)
                 .where(indexInfoIdEquals,
                         indexData.baseDate.goe(indexDataQuery.startDate()).and(indexData.baseDate.loe(indexDataQuery.endDate())))
-                .orderBy(createOrderSpecifiers(sortField, sortDirection))
+                .orderBy(createOrderSpecifiers(sortField, indexDataQuery.asc()))
                 .stream();
     }
 
-    private OrderSpecifier<?>[] createOrderSpecifiers(IndexDataSortField sortField, String sortDirection) {
-        Order direction = Order.valueOf(sortDirection);
+    private OrderSpecifier<?>[] createOrderSpecifiers(IndexDataSortField sortField, boolean asc) {
+        Order direction = asc ? Order.ASC : Order.DESC;
 
         OrderSpecifier<?> primary = switch (sortField) {
             case BASE_DATE -> new OrderSpecifier<>(direction, indexData.baseDate);

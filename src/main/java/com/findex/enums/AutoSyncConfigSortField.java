@@ -1,14 +1,14 @@
 package com.findex.enums;
 
+
 public enum AutoSyncConfigSortField {
     INDEX_INFO_INDEX_NAME,
     ENABLED;
 
-    public static AutoSyncConfigSortField parse(String s) {
-        if (s.equals("enable")) {
+    public static AutoSyncConfigSortField from(String raw) {
+        if ("enabled".equals(raw)) {
             return ENABLED;
-        } else {
-            return INDEX_INFO_INDEX_NAME;
         }
+        return INDEX_INFO_INDEX_NAME;
     }
 }

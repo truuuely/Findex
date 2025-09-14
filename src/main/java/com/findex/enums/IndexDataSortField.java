@@ -1,30 +1,28 @@
 package com.findex.enums;
 
 public enum IndexDataSortField {
-    BASE_DATE("baseDate"),
-    MARKET_PRICE("marketPrice"),
-    CLOSING_PRICE("closingPrice"),
-    HIGH_PRICE("highPrice"),
-    LOW_PRICE("lowPrice"),
-    VERSUS("versus"),
-    FLUCTUATION_RATE("fluctuationRate"),
-    TRADING_QUANTITY("tradingQuantity"),
-    TRADING_PRICE("tradingPrice"),
-    MARKET_TOTAL_AMOUNT("marketTotalAmount");
+    BASE_DATE,
+    MARKET_PRICE,
+    CLOSING_PRICE,
+    HIGH_PRICE,
+    LOW_PRICE,
+    VERSUS,
+    FLUCTUATION_RATE,
+    TRADING_QUANTITY,
+    TRADING_PRICE,
+    MARKET_TOTAL_AMOUNT;
 
-    private final String field;
-
-    IndexDataSortField(String field) {
-        this.field = field;
-    }
-
-    public static IndexDataSortField from(String field) {
-        for (IndexDataSortField value : values()) {
-            if (value.field.equals(field)) {
-                return value;
-            }
-        }
-
-        return BASE_DATE;
+    public static IndexDataSortField from(String raw) {
+        return switch (raw) {
+            case "marketPrice" -> MARKET_PRICE;
+            case "closingPrice" -> CLOSING_PRICE;
+            case "highPrice" -> HIGH_PRICE;
+            case "lowPrice" -> LOW_PRICE;
+            case "versus" -> VERSUS;
+            case "fluctuationRate" -> FLUCTUATION_RATE;
+            case "tradingQuantity" -> TRADING_QUANTITY;
+            case "tradingPrice" -> TRADING_PRICE;
+            default -> BASE_DATE;
+        };
     }
 }

@@ -1,3 +1,3 @@
-package com.findex.dto.autoSyncConfig;
+package com.findex.dto.autosyncconfig;
 
 public record AutoSyncConfigUpdateRequest(boolean enabled) {}
