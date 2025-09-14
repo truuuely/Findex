@@ -1,8 +1,8 @@
 package com.findex.entity;
 
 import com.findex.entity.base.BaseEntity;
-import com.findex.enums.SyncJobResult;
-import com.findex.enums.SyncJobType;
+import com.findex.enums.JobType;
+import com.findex.enums.SyncJobStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,7 +27,7 @@ public class SyncJob extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "job_type", length = 10, nullable = false)
-    private SyncJobType jobType; // ENUM(INDEX_INFO, INDEX_DATA)
+    private JobType jobType; // ENUM(INDEX_INFO, INDEX_DATA)
 
     @Column(name = "target_date", nullable = false)
     private LocalDate targetDate; // 대상날짜 (범위 요청이면 관례상 'to' 저장)
@@ -40,10 +40,10 @@ public class SyncJob extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "result", length = 10, nullable = false)
-    private SyncJobResult result; // ENUM(SUCCESS, FAILED)
+    private SyncJobStatus result; // ENUM(SUCCESS, FAILED)
 
     // 편의 생성자
-    public SyncJob(Long indexInfoId, SyncJobType jobType, LocalDate targetDate, String worker, SyncJobResult result) {
+    public SyncJob(Long indexInfoId, JobType jobType, LocalDate targetDate, String worker, SyncJobStatus result) {
         this.indexInfoId = indexInfoId;
         this.jobType = jobType;
         this.targetDate = targetDate;

@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.findex.enums.JobType;
 import com.findex.enums.SyncJobSortField;
 import com.findex.enums.SyncJobStatus;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record SyncJobQuery(
     JobType jobType,
     Long indexInfoId,
     LocalDate baseDateFrom,
     LocalDate baseDateTo,
-    Instant jobTimeFrom,
-    Instant jobTimeTo,
+    LocalDateTime jobTimeFrom,
+    LocalDateTime jobTimeTo,
     SyncJobStatus status,
     Long idAfter,
     String cursor,

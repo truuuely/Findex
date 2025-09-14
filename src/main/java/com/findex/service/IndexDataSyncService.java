@@ -6,6 +6,7 @@ import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
 import com.findex.entity.IndexData;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
+import com.findex.enums.SyncJobStatus;
 import com.findex.openapi.MarketIndexClient;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
@@ -63,10 +64,10 @@ public class IndexDataSyncService {
   private void saveJob(Long indexInfoId, java.time.LocalDate targetDate, String worker, boolean ok) {
     var job = new com.findex.entity.SyncJob(
         indexInfoId,
-        com.findex.enums.SyncJobType.INDEX_DATA,
+        com.findex.enums.JobType.INDEX_DATA,
         targetDate,
         worker,
-        ok ? com.findex.enums.SyncJobResult.SUCCESS : com.findex.enums.SyncJobResult.FAILED
+        ok ? SyncJobStatus.SUCCESS : SyncJobStatus.FAILED
     );
     jobRepo.save(job);
   }
