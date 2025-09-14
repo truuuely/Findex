@@ -11,16 +11,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/index-data")
 public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @GetMapping("/api/index-data/performance/favorite")
+    @GetMapping("/performance/favorite")
     public ResponseEntity<List<IndexPerformanceDto>> getFavoriteIndexPerformances(
         @RequestParam(defaultValue = "DAILY") PeriodType periodType
     ) {
