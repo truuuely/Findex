@@ -60,3 +60,6 @@ CREATE INDEX idx_index_info_index_name ON index_info (index_name);
 
 CREATE INDEX idx_index_data_info_date_id ON index_data (index_info_id, base_date, id);
 CREATE INDEX idx_index_data_info_closing_id ON index_data (index_info_id, closing_price, id);
+
+CREATE INDEX idx_sync_job_target_date ON sync_job (target_date);
+CREATE INDEX idx_sync_jbo_job_time ON sync_job (job_time);
