@@ -5,8 +5,6 @@ import com.findex.dto.response.CursorPageResponse;
 import com.findex.dto.syncjob.IndexDataOpenApiResult;
 import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
 import com.findex.dto.syncjob.SyncJobQuery;
-import com.findex.service.IndexDataSyncService;
-import com.findex.service.IndexInfoSyncService;
 import com.findex.service.SyncJobService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class SyncJobsController {
 
     private final SyncJobService syncJobService;
-    private final IndexInfoSyncService syncInfoService;
-    private final IndexDataSyncService syncDataService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -38,8 +34,8 @@ public class SyncJobsController {
 
     @PostMapping("/index-infos")
     @ResponseStatus(HttpStatus.OK)
-    public List<IndexInfoDto> syncAll() {
-        return syncInfoService.SyncResponse();
+    public List<IndexInfoDto> syncIndexInfo() {
+        return syncJobService.syncIndexInfo();
     }
 
     @PostMapping("/index-data")
@@ -49,7 +45,7 @@ public class SyncJobsController {
         HttpServletRequest httpRequest
     ) {
         String worker = resolveClientIp(httpRequest);
-        return syncDataService.syncFromOpenApi(req, worker); // IP 넘김
+        return syncJobService.syncIndexData(req, worker); // IP 넘김
     }
 
     private String resolveClientIp(HttpServletRequest request) {
