@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -34,12 +35,17 @@ public class SyncJobsController {
 
     @PostMapping("/index-infos")
     @ResponseStatus(HttpStatus.OK)
+    @Cacheable(value = "indexInfoCache", sync = true)
     public List<IndexInfoDto> syncIndexInfo() {
         return syncJobService.syncIndexInfo();
     }
 
     @PostMapping("/index-data")
     @ResponseStatus(HttpStatus.OK)
+    @Cacheable(
+        value = "indexDataCache",
+        key = "T(com.findex.util.CacheKeys).syncIndexData(#req)",
+        sync = true)
     public List<IndexDataOpenApiResult> syncIndexData(
         @RequestBody @Valid IndexDataOpenApiSyncRequest req,
         HttpServletRequest httpRequest

@@ -47,6 +47,7 @@ public class SyncJobService {
 
     @Transactional
     public List<IndexInfoDto> syncIndexInfo() {
+        log.warn("[index-info] syncIndexInfo");
         final int limit = 300;
         DateTimeFormatter ymd = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -106,10 +107,11 @@ public class SyncJobService {
 
     @Transactional
     public List<IndexDataOpenApiResult> syncIndexData(IndexDataOpenApiSyncRequest req, String worker) {
+        log.warn("[index-data] syncIndexData worker={}", worker);
         // 날짜 정규화
-        java.time.LocalDate from = req.baseDateFrom();
-        java.time.LocalDate to   = req.baseDateTo();
-        if (from.isAfter(to)) { java.time.LocalDate t = from; from = to; to = t; }
+        LocalDate from = req.baseDateFrom();
+        LocalDate to   = req.baseDateTo();
+        if (from.isAfter(to)) { LocalDate t = from; from = to; to = t; }
 
         // id 목록 순회
         var ids = new java.util.LinkedHashSet<>(req.indexInfoIds());
