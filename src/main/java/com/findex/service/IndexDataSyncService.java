@@ -9,7 +9,7 @@ import com.findex.enums.IndexSourceType;
 import com.findex.openapi.MarketIndexClient;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
-import com.findex.repository.syncJob.SyncJobRepository;
+import com.findex.repository.syncjob.SyncJobRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Service
 @RequiredArgsConstructor
