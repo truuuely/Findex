@@ -84,4 +84,11 @@ public class IndexData extends BaseEntity {
             this.marketTotalAmount = marketTotalAmount;
         }
     }
+
+    //api data 생성자 필드
+    public IndexData(Long indexInfoId, LocalDate baseDate, IndexSourceType sourceType) {
+        this.indexInfoId = indexInfoId;
+        this.baseDate = baseDate;
+        this.sourceType = sourceType;
+    }
 }
