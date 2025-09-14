@@ -1,5 +1,6 @@
 package com.findex.dto.indexinfo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.findex.enums.IndexSortField;
 
 public record IndexInfoQuery(
@@ -12,7 +13,10 @@ public record IndexInfoQuery(
     String sortDirection,
     Integer size,
 
+    @JsonIgnore
     IndexSortField sortFieldEnum,
+
+    @JsonIgnore
     Boolean asc
 ) {
     public static final String DEFAULT_SORT_FIELD = "indexClassification";

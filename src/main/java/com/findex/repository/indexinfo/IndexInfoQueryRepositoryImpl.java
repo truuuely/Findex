@@ -70,9 +70,9 @@ public class IndexInfoQueryRepositoryImpl implements IndexInfoQueryRepository{
         return new CursorPageResponse(
             rows,
             switch (q.sortFieldEnum()) {
-                case INDEX_CLASSIFICATION -> last.indexClassification();
                 case INDEX_NAME -> last.indexName();
                 case EMPLOYED_ITEMS_COUNT -> String.valueOf(last.employedItemsCount());
+                default -> last.indexClassification();
             },
             last.id(),
             q.size(),
@@ -120,16 +120,16 @@ public class IndexInfoQueryRepositoryImpl implements IndexInfoQueryRepository{
     }
 
     private OrderSpecifier<?>[] buildOrderSpecifiers(IndexSortField sortField, boolean asc) {
-        Order dir = asc ? Order.ASC : Order.DESC;
+        Order sortDirection = asc ? Order.ASC : Order.DESC;
 
-        OrderSpecifier<?> primary = switch (sortField) {
-            case INDEX_NAME -> new OrderSpecifier<>(dir, indexInfo.indexName);
-            case EMPLOYED_ITEMS_COUNT -> new OrderSpecifier<>(dir, indexInfo.employedItemsCount);
-            default -> new OrderSpecifier<>(dir, indexInfo.indexClassification);
+        OrderSpecifier<?> primaryOrder = switch (sortField) {
+            case INDEX_NAME -> new OrderSpecifier<>(sortDirection, indexInfo.indexName);
+            case EMPLOYED_ITEMS_COUNT -> new OrderSpecifier<>(sortDirection, indexInfo.employedItemsCount);
+            default -> new OrderSpecifier<>(sortDirection, indexInfo.indexClassification);
         };
 
         return new OrderSpecifier<?>[] {
-            primary,
+            primaryOrder,
             new OrderSpecifier<>(Order.ASC, indexInfo.id)
         };
     }
