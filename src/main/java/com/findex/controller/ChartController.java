@@ -20,16 +20,10 @@ public class ChartController {
 
   @GetMapping("/{id}/chart")
   public ResponseEntity<IndexChartDto> getChartData(
-      @PathVariable("id") Long indexInfoId,
+      @PathVariable("id") Long id,
       @RequestParam(defaultValue = "MONTHLY") ChartPeriodType periodType
   ) {
-    IndexChartDto result = chartService.getChartData(indexInfoId, periodType);
+    IndexChartDto result = chartService.getChartData(id, periodType);
     return ResponseEntity.ok(result);
   }
 }
-
-
-
-
-
-
