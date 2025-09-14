@@ -5,5 +5,5 @@ import com.findex.dto.response.CursorPageResponse;
 
 public interface IndexInfoQueryRepository {
 
-    CursorPageResponse findAll(IndexInfoQuery q);
+    CursorPageResponse findAll(IndexInfoQuery query);
 }
