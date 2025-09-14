@@ -52,7 +52,7 @@ public class IndexDataExportService {
                 }
             });
         } catch (IOException e) {
-            throw new RuntimeException("Failed to export CSV file");
+            throw new RuntimeException("Failed baseDateTo export CSV file");
         }
     }
 
