@@ -1,27 +1,33 @@
 package com.findex.service;
 
-import com.findex.dto.indexdata.IndexDataDto;
-import com.findex.dto.indexinfo.IndexInfoDto;
 import com.findex.dto.response.CursorPageResponse;
-import com.findex.dto.syncjob.IndexDataOpenApiResult;
 import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
+import com.findex.dto.syncjob.NormalizedIndexInfoItem;
+import com.findex.dto.syncjob.OpenApiIndexDataItem;
+import com.findex.dto.syncjob.OpenApiIndexInfoItem;
+import com.findex.dto.syncjob.SyncJobDto;
 import com.findex.dto.syncjob.SyncJobQuery;
 import com.findex.entity.IndexData;
 import com.findex.entity.IndexInfo;
+import com.findex.entity.SyncJob;
 import com.findex.enums.IndexSourceType;
+import com.findex.enums.JobType;
 import com.findex.enums.SyncJobStatus;
-import com.findex.mapper.IndexInfoMapper;
+import com.findex.mapper.SyncJobMapper;
 import com.findex.openapi.MarketIndexClient;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
 import com.findex.repository.syncjob.SyncJobRepository;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,204 +43,180 @@ public class SyncJobService {
     private final SyncJobRepository syncJobRepository;
     private final IndexInfoRepository indexInfoRepository;
     private final IndexDataRepository indexDataRepository;
-    private final IndexInfoMapper indexInfoMapper;
-
-    private static final int PAGE_SIZE = 500;
+    private final SyncJobMapper syncJobMapper;
 
     public CursorPageResponse findAll(SyncJobQuery query) {
         return syncJobRepository.findAll(query);
     }
 
     @Transactional
-    public List<IndexInfoDto> syncIndexInfo() {
-        log.warn("[index-info] syncIndexInfo");
-        final int limit = 300;
-        DateTimeFormatter ymd = DateTimeFormatter.ofPattern("yyyyMMdd");
-
-        var pr = client.callGetStockMarketIndex(1, limit);
-        if (pr == null || pr.items() == null || pr.items().isEmpty()) return List.of();
-
-        List<IndexInfoDto> out = new ArrayList<>();
-
-        for (var it : pr.items()) {
-            //값 정리
-            String cls  = normIndexInfo(it.idxCsf());
-            String name = normIndexInfo(it.idxNm());
-            Integer cnt = it.epyItmsCnt();
-            LocalDate bp = parseYmd(it.basPntm(), ymd);
-            Integer bidx = it.basIdx();
-
-            //null 있으면 생성/업데이트 모두 스킵해서 호출 (요구사항 개수와 같음)
-            if (cls == null || name == null || cnt == null || bp == null || bidx == null) {
-                continue;
-            }
-
-            // 빌더 제거 후 upsert 사용
-            Optional<IndexInfo> exist = indexInfoRepository.findByIndexClassificationAndIndexName(cls, name);
-            IndexInfo saved;
-            if (exist.isPresent()) {
-                IndexInfo e = exist.get();
-                e.update(cnt, bp, bidx, null);              // null 무시 업데이트
-                saved = indexInfoRepository.save(e);
-            } else {
-                // 생성자 직접 호출
-                saved = indexInfoRepository.save(new IndexInfo(
-                    cls,
-                    name,
-                    cnt,
-                    bp,
-                    bidx,
-                    IndexSourceType.OPEN_API,
-                    false
-                ));
-            }
-
-            out.add(indexInfoMapper.toDto(saved));
+    public List<SyncJobDto> syncIndexInfo(String worker) {
+        List<OpenApiIndexInfoItem> items = client.fetchIndexInfo();
+        if (items == null || items.isEmpty()) {
+            return List.of();
         }
-        return out;
-    }
+        final List<NormalizedIndexInfoItem> normalizedItems = items.stream()
+            .map(NormalizedIndexInfoItem::from)
+            .filter(Objects::nonNull) // 필수값 누락은 스킵
+            .toList();
 
-    private static String normIndexInfo(String s) {
-        if (s == null) return null;
-        String t = s.trim().replaceAll("\\s+", " ");
-        return t.isEmpty() ? null : t;
-    }
+        if (normalizedItems.isEmpty()) {
+            return List.of();
+        }
 
-    private static LocalDate parseYmd(String s, DateTimeFormatter fmt) {
-        try { return (s == null || s.isBlank()) ? null : LocalDate.parse(s.trim(), fmt); }
-        catch (Exception e) { return null; }
+        List<String> keys = normalizedItems.stream()
+            .map(n -> key(n.indexClassification(), n.indexName()))
+            .distinct()
+            .toList();
+
+        Map<String, IndexInfo> existingByKey = indexInfoRepository.findAllByCompositeKeyIn(keys)
+            .stream()
+            .collect(Collectors.toMap(
+                i -> key(i.getIndexClassification(), i.getIndexName()),
+                Function.identity()
+            ));
+
+        // 신규 후보는 키 기준으로 한 번만 생성 (중복 insert 방지)
+        Map<String, IndexInfo> stagedNewByKey = new LinkedHashMap<>();
+        List<IndexInfo> toUpdate = new ArrayList<>();
+
+        for (NormalizedIndexInfoItem item : normalizedItems) {
+            String k = key(item.indexClassification(), item.indexName());
+            IndexInfo exist = existingByKey.get(k);
+
+            if (exist != null) {
+                if (applyIfChanged(exist, item)) {
+                    toUpdate.add(exist);
+                }
+            } else {
+                IndexInfo staging = stagedNewByKey.get(k);
+                if (staging == null) {
+                    staging = new IndexInfo(
+                        item.indexClassification(),
+                        item.indexName(),
+                        item.employedItemsCount(),
+                        item.basePointInTime(),
+                        item.baseIndex(),
+                        IndexSourceType.OPEN_API,
+                        false
+                    );
+                    stagedNewByKey.put(k, staging);
+                } else {
+                    staging.update(
+                        item.employedItemsCount(),
+                        item.basePointInTime(),
+                        item.baseIndex(),
+                        null
+                    );
+                }
+            }
+        }
+
+        // 신규 일괄 저장 (중복 없음)
+        List<IndexInfo> savedNew = stagedNewByKey.isEmpty()
+            ? List.of()
+            : indexInfoRepository.saveAll(stagedNewByKey.values());
+
+        List<SyncJob> jobs = new ArrayList<>(normalizedItems.size());
+        for (IndexInfo u : toUpdate) {
+            jobs.add(new SyncJob(u.getId(), JobType.INDEX_INFO, null, worker, SyncJobStatus.SUCCESS));
+        }
+        for (IndexInfo c : savedNew) {
+            jobs.add(new SyncJob(c.getId(), JobType.INDEX_INFO, null, worker, SyncJobStatus.SUCCESS));
+        }
+
+        List<SyncJob> savedJobs = jobs.isEmpty() ? List.of() : syncJobRepository.saveAll(jobs);
+        return savedJobs.stream().map(syncJobMapper::toDto).toList();
     }
 
     @Transactional
-    public List<IndexDataOpenApiResult> syncIndexData(IndexDataOpenApiSyncRequest req, String worker) {
-        log.warn("[index-data] syncIndexData worker={}", worker);
-        // 날짜 정규화
-        LocalDate from = req.baseDateFrom();
-        LocalDate to   = req.baseDateTo();
-        if (from.isAfter(to)) { LocalDate t = from; from = to; to = t; }
-
-        // id 목록 순회
-        var ids = new java.util.LinkedHashSet<>(req.indexInfoIds());
-        var results = new java.util.ArrayList<IndexDataOpenApiResult>();
-
-        for (Long indexInfoId : ids) {
-            boolean ok = false;
-            try {
-                var one = syncOneIndex(indexInfoId, from, to);
-                results.add(one);
-                ok = true;
-            } catch (Exception e) {
-                // 실패한 요청 기록남김
-                log.error("[index-data] indexInfoId={} sync failed: {}", indexInfoId, e.toString());
-                // 필요 시 rethrow
-            } finally {
-                // 대상날짜
-                saveJob(indexInfoId, to, worker, ok);
-            }
-        }
-        return results;
-    }
-
-    // 기록 저장
-    private void saveJob(Long indexInfoId, java.time.LocalDate targetDate, String worker, boolean ok) {
-        var job = new com.findex.entity.SyncJob(
-            indexInfoId,
-            com.findex.enums.JobType.INDEX_DATA,
-            targetDate,
-            worker,
-            ok ? SyncJobStatus.SUCCESS : SyncJobStatus.FAILED
-        );
-        syncJobRepository.save(job);
-    }
-
-    // 단일 인덱스 처리
-    private IndexDataOpenApiResult syncOneIndex(Long indexInfoId, LocalDate from, LocalDate to) {
-        IndexInfo info = indexInfoRepository.getOrThrow(indexInfoId);
-
-        List<MarketIndexClient.OpenApiIndexDataItem> items;
-
-        // idxNm + idxCsf
-        items = fetchAllPages(info.getIndexName(), info.getIndexClassification(), from, to);
-
-        // idxNm만
-        if (items.isEmpty()) {
-            items = fetchAllPages(info.getIndexName(), null, from, to);
-            log.warn("[index-data] fallback#1 only idxNm. indexInfoIds={}, collected={}", indexInfoId, items.size());
-        }
-
-        // 전체 받아 로컬 필터
-        if (items.isEmpty()) {
-            List<MarketIndexClient.OpenApiIndexDataItem> all = fetchAllPages(null, null, from, to);
-            String want = norm(info.getIndexName());
-            items = all.stream().filter(it -> want.equals(norm(it.indexName()))).toList();
-            log.warn("[index-data] fallback#2 local filter. indexInfoIds={}, collected={}", indexInfoId, items.size());
-        }
-
-        // 업서트
-        int saved = 0;
-        for (var it : items) {
-            if (it.baseDate() == null) continue;
-            IndexData e = indexDataRepository.findByIndexInfoIdAndBaseDate(indexInfoId, it.baseDate())
-                .orElseGet(() -> new IndexData(indexInfoId, it.baseDate(), IndexSourceType.OPEN_API));
-            e.updatePrices(it.marketPrice(), it.closingPrice(), it.highPrice(), it.lowPrice());
-            e.updateFluctuation(it.versus(), it.fluctuationRate());
-            e.updateTrading(it.tradingQuantity(), it.tradingPrice(), it.marketTotalAmount());
-            indexDataRepository.save(e);
-            saved++;
-        }
-        log.info("[index-data] indexInfoIds={} upsert saved={}", indexInfoId, saved);
-
-        // 조회/반환
-        var list = fetchByIndexId(indexInfoId, from, to);
-        if (!list.isEmpty()) return list.get(0);
-
-        // 저장 0건이어도 응답 스키마 유지
-        return new IndexDataOpenApiResult(
-            info.getIndexName(),
-            java.util.List.of(new IndexDataOpenApiResult.Group(indexInfoId, info.getIndexClassification(), java.util.List.of()))
-        );
-    }
-
-    @Transactional(readOnly = true)
-    public List<IndexDataOpenApiResult> fetchByIndexId(Long indexInfoId, LocalDate from, LocalDate to) {
-        var rows = indexDataRepository.findJoinedSortedByIndexId(indexInfoId, from, to);
-
-        Map<Long, List<IndexDataDto>> byInfoId = new LinkedHashMap<>();
-        for (var r : rows) {
-            byInfoId.computeIfAbsent(r.indexInfoId(), k -> new ArrayList<>())
-                .add(new IndexDataDto(
-                    null, r.indexInfoId(), r.baseDate(), r.sourceType(),
-                    r.marketPrice(), r.closingPrice(), r.highPrice(), r.lowPrice(),
-                    r.versus(), r.fluctuationRate(), r.tradingQuantity(), r.tradingPrice(), r.marketTotalAmount()
-                ));
-        }
-
-        IndexInfo info = indexInfoRepository.getOrThrow(indexInfoId);
-        List<IndexDataOpenApiResult.Group> groups = new ArrayList<>();
-        byInfoId.forEach((id, list) ->
-            groups.add(new IndexDataOpenApiResult.Group(id, info.getIndexClassification(), list))
-        );
-
-        return List.of(new IndexDataOpenApiResult(info.getIndexName(), groups));
-    }
-
-    // 페이징 수집
-    private List<MarketIndexClient.OpenApiIndexDataItem> fetchAllPages(
-        String idxNm, String idxCsf, LocalDate from, LocalDate to
+    public List<SyncJobDto> syncIndexData(
+        IndexDataOpenApiSyncRequest request,
+        String worker
     ) {
-        List<MarketIndexClient.OpenApiIndexDataItem> out = new ArrayList<>();
-        int page = 1;
-        while (true) {
-            var pr = client.callGetStockMarketIndexData(idxNm, idxCsf, from, to, page, PAGE_SIZE);
-            if (pr.items() != null && !pr.items().isEmpty()) out.addAll(pr.items());
-            if (pr.items() == null || pr.items().isEmpty() || page * pr.numOfRows() >= pr.totalCount()) break;
-            page++;
+        // 날짜 정규화
+        LocalDate from = request.baseDateFrom();
+        LocalDate to   = request.baseDateTo();
+        if (from.isAfter(to)) {
+            LocalDate temp = from;
+            from = to;
+            to = temp;
+        }
+
+        Set<Long> ids = new HashSet<>(request.indexInfoIds());
+        List<SyncJobDto> out = new ArrayList<>();
+        for (Long indexInfoId : ids) {
+            out.addAll(syncOneIndexWithClassificationFilter(indexInfoId, from, to, worker));
         }
         return out;
     }
 
-    private static String norm(String s) {
-        if (s == null) return "";
-        return s.trim().replaceAll("\\s+", " ");
+    @Transactional
+    protected List<SyncJobDto> syncOneIndexWithClassificationFilter(Long indexInfoId, LocalDate from, LocalDate to, String worker) {
+        IndexInfo info = indexInfoRepository.getOrThrow(indexInfoId);
+        String cls  = info.getIndexClassification();
+
+        // 1) idxNm 로만 조회(최대 500건, 1회 호출)
+        List<OpenApiIndexDataItem> raw = client.fetchIndexData(info.getIndexName(), from, to);
+
+        // 2) 분류 불일치 제외 (원본값 그대로 비교)
+        List<OpenApiIndexDataItem> items = raw.stream()
+            .filter(r -> Objects.equals(cls, r.indexClassification()))
+            .toList();
+
+        // 3) basDt 중복은 last-wins로 맵핑
+        Map<LocalDate, OpenApiIndexDataItem> byDate = new LinkedHashMap<>();
+        for (OpenApiIndexDataItem item : items) {
+            if (item.baseDate() != null) {
+                byDate.put(item.baseDate(), item);
+            }
+        }
+
+        // 4) 날짜 구간 순회하며 업서트 + SyncJob(targetDate=해당 일자) 기록
+        List<SyncJobDto> jobs = new ArrayList<>();
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
+            try {
+                OpenApiIndexDataItem item = byDate.get(d);
+                if (item != null) {
+                    upsertOneDay(indexInfoId, item);
+                    SyncJob job = new SyncJob(indexInfoId, JobType.INDEX_DATA, d, worker, SyncJobStatus.SUCCESS);
+                    jobs.add(syncJobMapper.toDto(syncJobRepository.save(job)));
+                }
+            } catch (Exception e) {
+                SyncJob job = new SyncJob(indexInfoId, JobType.INDEX_DATA, d, worker, SyncJobStatus.FAILED);
+                jobs.add(syncJobMapper.toDto(syncJobRepository.save(job)));
+            }
+        }
+        return jobs;
+    }
+
+    private void upsertOneDay(Long indexInfoId, OpenApiIndexDataItem r) {
+        IndexData e = indexDataRepository.findByIndexInfoIdAndBaseDate(indexInfoId, r.baseDate())
+            .orElseGet(() -> new IndexData(indexInfoId, r.baseDate(), IndexSourceType.OPEN_API));
+        e.updatePrices(r.marketPrice(), r.closingPrice(), r.highPrice(), r.lowPrice());
+        e.updateFluctuation(r.versus(), r.fluctuationRate());
+        e.updateTrading(r.tradingQuantity(), r.tradingPrice(), r.marketTotalAmount());
+        indexDataRepository.save(e);
+    }
+
+    private boolean applyIfChanged(IndexInfo target, NormalizedIndexInfoItem item) {
+        if (
+            !Objects.equals(target.getEmployedItemsCount(), item.employedItemsCount())
+                || !Objects.equals(target.getBasePointInTime(), item.basePointInTime())
+                || !Objects.equals(target.getBaseIndex(), item.baseIndex())
+        ) {
+            target.update(
+                item.employedItemsCount(),
+                item.basePointInTime(),
+                item.baseIndex(),
+                null
+            );
+            return true;
+        }
+        return false;
+    }
+
+    private static String key(String cls, String name) {
+        return (cls + "||" + name);
     }
 }

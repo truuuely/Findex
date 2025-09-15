@@ -1,11 +1,11 @@
 package com.findex.controller;
 
-import com.findex.dto.indexinfo.IndexInfoDto;
 import com.findex.dto.response.CursorPageResponse;
-import com.findex.dto.syncjob.IndexDataOpenApiResult;
 import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
+import com.findex.dto.syncjob.SyncJobDto;
 import com.findex.dto.syncjob.SyncJobQuery;
 import com.findex.service.SyncJobService;
+import com.findex.util.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/sync-jobs")
-public class SyncJobsController {
+public class SyncJobController {
 
     private final SyncJobService syncJobService;
 
@@ -34,10 +34,11 @@ public class SyncJobsController {
     }
 
     @PostMapping("/index-infos")
-    @ResponseStatus(HttpStatus.OK)
-    @Cacheable(value = "indexInfoCache", sync = true)
-    public List<IndexInfoDto> syncIndexInfo() {
-        return syncJobService.syncIndexInfo();
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @Cacheable(cacheNames = "indexInfoCache", key = "'syncIndexInfo'", sync = true)
+    public List<SyncJobDto> syncIndexInfo(HttpServletRequest httpRequest) {
+        String worker = ClientIpResolver.resolve(httpRequest);
+        return syncJobService.syncIndexInfo(worker);
     }
 
     @PostMapping("/index-data")
@@ -46,31 +47,11 @@ public class SyncJobsController {
         value = "indexDataCache",
         key = "T(com.findex.util.CacheKeys).syncIndexData(#req)",
         sync = true)
-    public List<IndexDataOpenApiResult> syncIndexData(
+    public List<SyncJobDto> syncIndexData(
         @RequestBody @Valid IndexDataOpenApiSyncRequest req,
         HttpServletRequest httpRequest
     ) {
-        String worker = resolveClientIp(httpRequest);
-        return syncJobService.syncIndexData(req, worker); // IP 넘김
-    }
-
-    private String resolveClientIp(HttpServletRequest request) {
-        String ip = null;
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            ip = xff.split(",")[0].trim(); // 첫 IP
-            String xrip = request.getHeader("X-Real-IP");
-            if (xrip != null && !xrip.isBlank()) ip = xrip.trim();
-        }
-
-        // 없으면 RemoteAddr
-        if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
-
-        // 정규화
-        if ("0:0:0:0:0:0:0:1".equals(ip) || "::1".equals(ip)) return "127.0.0.1";
-        if (ip.startsWith("::ffff:")) ip = ip.substring(7);      // IPv4-mapped
-        int pct = ip.indexOf('%'); if (pct > 0) ip = ip.substring(0, pct); // zoneId
-
-        return ip;
+        String worker = ClientIpResolver.resolve(httpRequest);
+        return syncJobService.syncIndexData(req, worker);
     }
 }
