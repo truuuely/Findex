@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/sync-jobs")
-public class SyncJobsController {
+public class SyncJobController {
 
     private final SyncJobService syncJobService;
 
