@@ -5,13 +5,12 @@ import com.findex.dto.response.CursorPageResponse;
 import com.findex.dto.syncjob.IndexDataOpenApiResult;
 import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
 import com.findex.dto.syncjob.SyncJobQuery;
-import com.findex.service.IndexDataSyncService;
-import com.findex.service.IndexInfoSyncService;
 import com.findex.service.SyncJobService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,8 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class SyncJobsController {
 
     private final SyncJobService syncJobService;
-    private final IndexInfoSyncService syncInfoService;
-    private final IndexDataSyncService syncDataService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -38,18 +35,23 @@ public class SyncJobsController {
 
     @PostMapping("/index-infos")
     @ResponseStatus(HttpStatus.OK)
-    public List<IndexInfoDto> syncAll() {
-        return syncInfoService.SyncResponse();
+    @Cacheable(value = "indexInfoCache", sync = true)
+    public List<IndexInfoDto> syncIndexInfo() {
+        return syncJobService.syncIndexInfo();
     }
 
     @PostMapping("/index-data")
     @ResponseStatus(HttpStatus.OK)
+    @Cacheable(
+        value = "indexDataCache",
+        key = "T(com.findex.util.CacheKeys).syncIndexData(#req)",
+        sync = true)
     public List<IndexDataOpenApiResult> syncIndexData(
         @RequestBody @Valid IndexDataOpenApiSyncRequest req,
         HttpServletRequest httpRequest
     ) {
         String worker = resolveClientIp(httpRequest);
-        return syncDataService.syncFromOpenApi(req, worker); // IP 넘김
+        return syncJobService.syncIndexData(req, worker); // IP 넘김
     }
 
     private String resolveClientIp(HttpServletRequest request) {
