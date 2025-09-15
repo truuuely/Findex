@@ -1,9 +1,9 @@
 package com.findex.controller;
 
-import com.findex.dto.indexinfo.IndexInfoDto;
 import com.findex.dto.response.CursorPageResponse;
 import com.findex.dto.syncjob.IndexDataOpenApiResult;
 import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
+import com.findex.dto.syncjob.SyncJobDto;
 import com.findex.dto.syncjob.SyncJobQuery;
 import com.findex.service.SyncJobService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,10 +34,11 @@ public class SyncJobController {
     }
 
     @PostMapping("/index-infos")
-    @ResponseStatus(HttpStatus.OK)
-    @Cacheable(value = "indexInfoCache", sync = true)
-    public List<IndexInfoDto> syncIndexInfo() {
-        return syncJobService.syncIndexInfo();
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @Cacheable(cacheNames = "indexInfoCache", key = "'syncIndexInfo'", sync = true)
+    public List<SyncJobDto> syncIndexInfo(HttpServletRequest httpRequest) {
+        String worker = resolveClientIp(httpRequest);
+        return syncJobService.syncIndexInfo(worker);
     }
 
     @PostMapping("/index-data")

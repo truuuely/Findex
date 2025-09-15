@@ -1,19 +1,21 @@
 package com.findex.service;
 
 import com.findex.dto.indexdata.IndexDataDto;
-import com.findex.dto.indexinfo.IndexInfoDto;
 import com.findex.dto.response.CursorPageResponse;
 import com.findex.dto.syncjob.IndexDataOpenApiResult;
 import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
 import com.findex.dto.syncjob.OpenApiIndexDataItem;
 import com.findex.dto.syncjob.OpenApiIndexInfoItem;
 import com.findex.dto.syncjob.OpenApiIndexInfoResponse;
+import com.findex.dto.syncjob.SyncJobDto;
 import com.findex.dto.syncjob.SyncJobQuery;
 import com.findex.entity.IndexData;
 import com.findex.entity.IndexInfo;
+import com.findex.entity.SyncJob;
 import com.findex.enums.IndexSourceType;
+import com.findex.enums.JobType;
 import com.findex.enums.SyncJobStatus;
-import com.findex.mapper.IndexInfoMapper;
+import com.findex.mapper.SyncJobMapper;
 import com.findex.openapi.MarketIndexClient;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
@@ -41,10 +43,9 @@ public class SyncJobService {
     private final SyncJobRepository syncJobRepository;
     private final IndexInfoRepository indexInfoRepository;
     private final IndexDataRepository indexDataRepository;
-    private final IndexInfoMapper indexInfoMapper;
+    private final SyncJobMapper syncJobMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private static final int NUM_OF_ROWS = 300;
     private static final int PAGE_SIZE = 500;
 
     public CursorPageResponse findAll(SyncJobQuery query) {
@@ -52,16 +53,16 @@ public class SyncJobService {
     }
 
     @Transactional
-    public List<IndexInfoDto> syncIndexInfo() {
-        OpenApiIndexInfoResponse response = client.callGetStockMarketIndex(NUM_OF_ROWS);
+    public List<SyncJobDto> syncIndexInfo(String worker) {
+        OpenApiIndexInfoResponse response = client.callGetStockMarketIndex();
         if (response == null || response.items() == null || response.items().isEmpty()) {
             return List.of();
         }
 
-        List<IndexInfoDto> out = new ArrayList<>();
+        List<SyncJobDto> result = new ArrayList<>();
 
         for (OpenApiIndexInfoItem item : response.items()) {
-            //값 정리
+            // 값 정리
             String indexClassification  = normIndexInfo(item.idxCsf());
             String indexName = normIndexInfo(item.idxNm());
             Integer employedItemsCount = item.epyItmsCnt();
@@ -75,13 +76,13 @@ public class SyncJobService {
 
             // 빌더 제거 후 upsert 사용
             Optional<IndexInfo> exist = indexInfoRepository.findByIndexClassificationAndIndexName(indexClassification, indexName);
-            IndexInfo saved;
+            IndexInfo savedIndexInfo;
             if (exist.isPresent()) {
                 IndexInfo indexInfo = exist.get();
                 indexInfo.update(employedItemsCount, basePointInTime, baseIndex, null);
-                saved = indexInfoRepository.save(indexInfo);
+                savedIndexInfo = indexInfoRepository.save(indexInfo);
             } else {
-                saved = indexInfoRepository.save(new IndexInfo(
+                savedIndexInfo = indexInfoRepository.save(new IndexInfo(
                     indexClassification,
                     indexName,
                     employedItemsCount,
@@ -92,10 +93,20 @@ public class SyncJobService {
                 ));
             }
 
-            out.add(indexInfoMapper.toDto(saved));
+            SyncJob savedSyncJob = syncJobRepository.save(
+                new SyncJob(
+                    savedIndexInfo.getId(),
+                    JobType.INDEX_INFO,
+                    null,
+                    worker,
+                    SyncJobStatus.SUCCESS
+                )
+            );
+
+            result.add(syncJobMapper.toDto(savedSyncJob));
         }
 
-        return out;
+        return result;
     }
 
     private static String normIndexInfo(String s) {
