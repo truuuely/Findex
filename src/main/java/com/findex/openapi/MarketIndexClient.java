@@ -6,7 +6,6 @@ import com.findex.config.OpenApiProperties;
 import com.findex.dto.syncjob.OpenApiIndexDataItem;
 import com.findex.dto.syncjob.OpenApiIndexDataResponse;
 import com.findex.dto.syncjob.OpenApiIndexInfoItem;
-import com.findex.dto.syncjob.OpenApiIndexInfoResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -21,43 +20,53 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class MarketIndexClient {
 
-    private final RestClient client;
-    private final OpenApiProperties props;
-    private final ObjectMapper om;
+    private final RestClient restClient;
+    private final OpenApiProperties openApiProperties;
+    private final ObjectMapper objectMapper;
 
-    private static final int NUM_OF_ROWS = 300;
+    private static final String PATH = "/GetMarketIndexInfoService/getStockMarketIndex";
+    private static final String RESULT_TYPE_JSON = "json";
+    private static final int DEFAULT_NUM_OF_ROWS = 300;
 
-    // 지수정보
-    public OpenApiIndexInfoResponse callGetStockMarketIndex() {
+    public List<OpenApiIndexInfoItem> getStockMarketIndex() {
         String uri = UriComponentsBuilder
-            .fromPath("/GetMarketIndexInfoService/getStockMarketIndex")
-            .queryParam("serviceKey", props.serviceKey())
-            .queryParam("resultType", "json")
-            .queryParam("numOfRows", NUM_OF_ROWS)
+            .fromPath(PATH)
+            .queryParam("serviceKey", openApiProperties.serviceKey())
+            .queryParam("resultType", RESULT_TYPE_JSON)
+            .queryParam("numOfRows", DEFAULT_NUM_OF_ROWS)
             .toUriString();
 
-        String body = client.get().uri(uri).retrieve().body(String.class);
+        String body;
         try {
-            JsonNode root = om.readTree(body);
-            String code = root.path("response").path("header").path("resultCode").asText("00");
-            if (!"00".equals(code)) {
-                String msg = root.path("response").path("header").path("resultMsg").asText();
-                throw new IllegalStateException("OpenAPI error " + code + ": " + msg);
-            }
-            JsonNode b = root.path("response").path("body");
-            int total = b.path("totalCount").asInt(0);
-            int size = b.path("numOfRows").asInt(NUM_OF_ROWS);
+            body = restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(String.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("OpenAPI request failed: getStockMarketIndex", e);
+        }
 
-            JsonNode itemNode = b.path("items").path("item");
+        try {
+            JsonNode root = objectMapper.readTree(body);
+
+            JsonNode header = root.path("response").path("header");
+            String code = header.path("resultCode").asText("00");
+            if (!"00".equals(code)) {
+                String msg = header.path("resultMsg").asText();
+                throw new IllegalStateException("OpenAPI error %s: %s".formatted(code, msg));
+            }
+
+            JsonNode itemNode = root.path("response").path("body").path("items").path("item");
+
             List<OpenApiIndexInfoItem> items = new ArrayList<>();
             if (itemNode.isArray()) {
                 for (JsonNode n : itemNode) items.add(convertInfo(n));
             } else if (itemNode.isObject()) {
                 items.add(convertInfo(itemNode));
             }
-            return new OpenApiIndexInfoResponse(items, total, size);
+            return items;
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse OpenAPI response", e);
+            throw new IllegalStateException("Failed to parse OpenAPI response: getStockMarketIndex", e);
         }
     }
 
@@ -68,7 +77,7 @@ public class MarketIndexClient {
         DateTimeFormatter ymd = DateTimeFormatter.ofPattern("yyyyMMdd");
         UriComponentsBuilder ub = UriComponentsBuilder
             .fromPath("/GetMarketIndexInfoService/getStockMarketIndex")
-            .queryParam("serviceKey", props.serviceKey())
+            .queryParam("serviceKey", openApiProperties.serviceKey())
             .queryParam("resultType", "json")
             .queryParam("pageNo", pageNo)
             .queryParam("numOfRows", numOfRows)
@@ -79,10 +88,10 @@ public class MarketIndexClient {
         if (idxCsf != null && !idxCsf.isBlank()) ub.queryParam("idxCsf", idxCsf);
 
         String uri = ub.toUriString();
-        String body = client.get().uri(uri).retrieve().body(String.class);
+        String body = restClient.get().uri(uri).retrieve().body(String.class);
 
         try {
-            JsonNode root = om.readTree(body);
+            JsonNode root = objectMapper.readTree(body);
             String code = root.path("response").path("header").path("resultCode").asText("00");
             if (!"00".equals(code)) {
                 String msg = root.path("response").path("header").path("resultMsg").asText();

@@ -14,10 +14,9 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        // expireAfterWrite 미설정 → TTL 없음(무기한)
         CaffeineCacheManager m = new CaffeineCacheManager("indexInfoCache", "indexDataCache");
         m.setCaffeine(Caffeine.newBuilder()
-            .maximumSize(10_000)     // 메모리 보호용 상한(필요시 조정)
+            .maximumSize(10_000)
             .recordStats());
         return m;
     }
