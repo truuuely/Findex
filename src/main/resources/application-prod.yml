@@ -1,18 +1,15 @@
+server:
+  port: ${PORT:8080}
+
 spring:
   datasource:
-    url: jdbc:postgresql://${HOST}:${PORT}/${NAME}
-    driver-class-name: org.postgresql.Driver
-    username: ${USERNAME}
-    password: ${PASSWORD}
-
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: false
-
-  h2:
-    console:
-      enabled: false
+    open-in-view: false
 
 springdoc:
   swagger-ui:
