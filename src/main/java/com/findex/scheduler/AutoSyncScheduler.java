@@ -49,7 +49,7 @@ public class AutoSyncScheduler {
                     continue;
                 }
 
-                var req = new IndexDataOpenApiSyncRequest(List.of(id), from, to);
+                IndexDataOpenApiSyncRequest req = new IndexDataOpenApiSyncRequest(List.of(id), from, to);
                 List<SyncJobDto> jobs = syncJobService.syncIndexData(req, "scheduler");
 
                 ok++;
