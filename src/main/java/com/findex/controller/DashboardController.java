@@ -14,12 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class DashboardController {
 
-  private final DashboardService dashboardService;
+    private final DashboardService dashboardService;
 
-  @GetMapping("/api/index-data/performance/favorite")
-  public ResponseEntity<List<IndexPerformanceDto>> getFavoriteIndexPerformances(
-      @RequestParam(defaultValue = "DAILY") PeriodType periodType) {
-    List<IndexPerformanceDto> result = dashboardService.getFavoriteIndexPerformances(periodType);
-    return ResponseEntity.ok(result);
-  }
+    @GetMapping("/api/index-data/performance/favorite")
+    public ResponseEntity<List<IndexPerformanceDto>> getFavoriteIndexPerformances(
+        @RequestParam(defaultValue = "DAILY") PeriodType periodType
+    ) {
+        List<IndexPerformanceDto> result = dashboardService.getFavoriteIndexPerformances(periodType);
+        return ResponseEntity.ok(result);
+    }
 }

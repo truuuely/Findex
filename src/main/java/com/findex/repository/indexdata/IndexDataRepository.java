@@ -20,7 +20,7 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>, Ind
     }
 
     @Query("SELECT d FROM IndexData d WHERE d.indexInfoId = :indexInfoId AND d.baseDate > :startDate ORDER BY d.baseDate ASC")
-    List<IndexData> findChartData(@Param("indexInfoIds") Long indexInfoId, @Param("startDate") LocalDate startDate);
+    List<IndexData> findChartData(@Param("indexInfoId") Long indexInfoId, @Param("startDate") LocalDate startDate);
 
     @Query("""
         SELECT new com.findex.dto.syncjob.IndexDataJoinedRow(

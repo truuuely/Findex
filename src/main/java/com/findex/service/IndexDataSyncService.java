@@ -6,10 +6,11 @@ import com.findex.dto.syncjob.IndexDataOpenApiSyncRequest;
 import com.findex.entity.IndexData;
 import com.findex.entity.IndexInfo;
 import com.findex.enums.IndexSourceType;
+import com.findex.enums.SyncJobStatus;
 import com.findex.openapi.MarketIndexClient;
 import com.findex.repository.indexdata.IndexDataRepository;
 import com.findex.repository.indexinfo.IndexInfoRepository;
-import com.findex.repository.syncJob.SyncJobRepository;
+import com.findex.repository.syncjob.SyncJobRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Service
 @RequiredArgsConstructor
@@ -64,10 +64,10 @@ public class IndexDataSyncService {
   private void saveJob(Long indexInfoId, java.time.LocalDate targetDate, String worker, boolean ok) {
     var job = new com.findex.entity.SyncJob(
         indexInfoId,
-        com.findex.enums.SyncJobType.INDEX_DATA,
+        com.findex.enums.JobType.INDEX_DATA,
         targetDate,
         worker,
-        ok ? com.findex.enums.SyncJobResult.SUCCESS : com.findex.enums.SyncJobResult.FAILED
+        ok ? SyncJobStatus.SUCCESS : SyncJobStatus.FAILED
     );
     jobRepo.save(job);
   }
