@@ -17,7 +17,6 @@ Findex는 외부 Open API와 연동하여 금융 지수 데이터를 제공하�
 
 지수별 **성과 분석**, **이동평균선** 계산, **자동 데이터 업데이트**를 통해 가볍고도 강력한 분석 환경을 제공합니다. 📈📊
 
-- 상세 가이드(노션링크)
 
 - ## ✨ 주요 기능
 
@@ -31,11 +30,12 @@ Findex는 외부 Open API와 연동하여 금융 지수 데이터를 제공하�
 - 지수 정보 **등록 / 수정 / 삭제**
 - 지수 정보 **목록 조회**
 
-### 3) 지수 데이터 관리
+### 3) 지수 데이터 관리 (담당)
 
 - 지수 데이터(시계열) 조회
 - 지수 데이터 **등록 / 수정 / 삭제**
-- 지수 데이터 **목록 조회**
+- 지수 데이터 **지수, 기간별 목록 조회**
+  - 특정 기준으로 정렬
 - 지수 데이터 **Export** (CSV 등)
 
 ### 4) 연동 작업 관리
@@ -61,9 +61,8 @@ Findex는 외부 Open API와 연동하여 금융 지수 데이터를 제공하�
 
 ## 🧱 기술 스택
 
-> 프로젝트 완료 후 실제 사용 스택으로 업데이트하세요.
-> 
 - JAVA/SpringBoot
+- JPA/QueryDSL
 - PostgreSQL
 - Git, GitHub
 
@@ -71,5 +70,22 @@ Findex는 외부 Open API와 연동하여 금융 지수 데이터를 제공하�
 
 ## 📁 프로젝트 구조
 
-> 상세 구조는 구현 이후 업데이트합니다.
->
+### ERD
+
+<img width="1740" height="882" alt="image" src="https://github.com/user-attachments/assets/6aab5ab7-3366-4c29-9017-1845a346cf27" />
+
+### UI
+
+- 대시보드
+  <img width="1456" height="1326" alt="image" src="https://github.com/user-attachments/assets/2648aaf8-bb73-460e-9216-61e7e88c0fba" />
+
+- 지수 관리
+  <img width="1465" height="978" alt="image" src="https://github.com/user-attachments/assets/94cd161b-f4cd-4815-b363-f8fd63b5907f" />
+
+- 데이터 관리
+  <img width="1466" height="961" alt="image" src="https://github.com/user-attachments/assets/de13fa25-f4ce-4f30-a8fe-e50c9f639ad4" />
+
+- 연동 관리
+  <img width="1464" height="1242" alt="image" src="https://github.com/user-attachments/assets/053891e7-7902-41d9-b954-4d18c80f1749" />
+
+
